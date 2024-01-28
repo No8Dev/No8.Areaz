@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "No8.Areaz", "No8.Areaz\No8.Areaz.csproj", "{B7691EAF-EAAE-472D-AC0F-3EF529230AFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "No8.AreazTests", "No8.AreazTests\No8.AreazTests.csproj", "{C02FDFD3-4AF4-4594-A65C-F2CE793C3D14}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stuff", "Stuff", "{C2252098-7DB5-46B6-B02A-EF9BADFC1E4C}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B7691EAF-EAAE-472D-AC0F-3EF529230AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7691EAF-EAAE-472D-AC0F-3EF529230AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7691EAF-EAAE-472D-AC0F-3EF529230AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7691EAF-EAAE-472D-AC0F-3EF529230AFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C02FDFD3-4AF4-4594-A65C-F2CE793C3D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C02FDFD3-4AF4-4594-A65C-F2CE793C3D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C02FDFD3-4AF4-4594-A65C-F2CE793C3D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C02FDFD3-4AF4-4594-A65C-F2CE793C3D14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
