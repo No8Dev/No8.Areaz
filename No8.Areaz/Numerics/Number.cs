@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace No8.Areaz;
 
@@ -20,68 +22,74 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
 
     public Number() : this(ValueUndefined, UoM.Undefined) { }
 
-    //public static Dimension operator -(Dimension left) => left with { Value = -left.Value };
     public static implicit operator Number(int i) => new(i, UoM.Points);
     public static implicit operator Number(short s) => new(s, UoM.Points);
     public static implicit operator Number(float f) => f.HasValue() ? new(f, UoM.Points) : Undefined;
     public static implicit operator Number(double d) => new((float)d, UoM.Points);
-    public static implicit operator float(Number dim) => dim.IsDefined() ? dim.Value : ValueUndefined;
-    
-    public static Number Percent(float f) => new(f, UoM.Percent);
-    public static Number Point(float f) => new(f, UoM.Points);
-    
-    
-    
-    
-    internal bool IsDefined()
+    public static implicit operator float(Number dim) => dim.HasValue() ? dim.Value : ValueUndefined;
+
+    public bool IsAuto => Unit == UoM.Auto;
+    public bool IsPoints => Unit == UoM.Points;
+    public bool IsPercent => Unit == UoM.Percent;
+
+    internal bool HasValue()
     {
         return Unit switch
         {
-            UoM.Percent => true,
-            UoM.Points => true,
+            UoM.Auto => true,
+            UoM.Percent => Value.HasValue(),
+            UoM.Points => Value.HasValue(),
             _ => false
         };
     }
     
-    public bool HasValue() => Unit == UoM.Points && (!float.IsNaN(Value) && !float.IsInfinity(Value));
-    public bool HasNoValue() => !HasValue();
     
-    public bool HasValue(out float value)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasPointValue() => Unit == UoM.Points && Value.HasValue();
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasPercentValue() => Unit == UoM.Percent && Value.HasValue();
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasNoPointValue() => Unit != UoM.Points || Value.HasNoValue();
+    
+    
+    public bool HasPointValue(out float value)
     {
         value = Value;
-        return value.HasValue();
+        return HasPointValue();
     }
 
-    public float MaybeMin(float other)
+    public float Min(float other)
     {
-        if (other.HasNoValue()) return Value;
-        if (Value.HasValue())
-            return MathF.Min(Value, other);
-        return Value;
-    }
-    public float MaybeMax(float other)
-    {
-        if (other.HasNoValue()) return Value;
-        if (Value.HasValue())
-            return MathF.Max(Value, other);
-        return Value;
-    }
-
-    public float MaxNumber(float other)
-    {
-        if (HasValue() && other.HasValue())
-            return MathF.Max(Value, other);
-        if (Value.HasValue())
-            return Value;
+        if (IsPoints)
+        {
+            if (Value.HasValue() && other.HasValue())
+                return MathF.Min(Value, other);
+            if (Value.HasValue())
+                return Value;
+        }
         return other;
     }
-    
+    public float Max(float other)
+    {
+        if (IsPoints)
+        {
+            if (Value.HasValue() && other.HasValue())
+                return MathF.Max(Value, other);
+            if (Value.HasValue())
+                return Value;
+        }
+
+        return other;
+    }
+
     public static float Add(float number, float other)
     {
         if (number.HasValue() && other.HasValue())
             return number + other;
         
-        return number.HasValue() ? number : Number.ValueUndefined;
+        return number.HasValue() ? number : ValueUndefined;
     }
 
     public static float Subtract(float number, float other)
@@ -89,7 +97,7 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
         if (number.HasValue() && other.HasValue())
             return number - other;
         
-        return number.HasValue() ? number : Number.ValueUndefined;
+        return number.HasValue() ? number : ValueUndefined;
 
     }
 
@@ -98,7 +106,7 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
         if (number.HasValue() && other.HasValue())
             return number * other;
         
-        return number.HasValue() ? number : Number.ValueUndefined;
+        return number.HasValue() ? number : ValueUndefined;
     }
 
     public static float Divide(float number, float other)
@@ -106,7 +114,7 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
         if (number.HasValue() && other.HasValue())
             return number / other;
             
-        return number.HasValue() ? number : Number.ValueUndefined;
+        return number.HasValue() ? number : ValueUndefined;
     }
     
     
@@ -114,13 +122,13 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
     {
         return Unit switch
         {
-            Number.UoM.Points => Value,
-            Number.UoM.Percent => Number.Multiply(parentDim, Value),
-            _ => Number.ValueUndefined
+            UoM.Points => Value,
+            UoM.Percent => Multiply(parentDim, Value),
+            _ => ValueUndefined
         };
     }
 
-    public float OrElse(float other) => HasValue() ? Value : other;
+    public float OrElse(float other) => HasPointValue() ? Value : other;
     
 
     public virtual bool Equals(Number? other)
@@ -151,15 +159,15 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
 
     public static Number operator +(Number left, Number right)
     {
-        if (left.IsDefined() && right.IsDefined() && left.Unit == right.Unit)
-            return new Number(left.Value + right.Value, left.Unit);
+        if (left.HasPointValue() && right.HasPointValue())
+            return left.Value + right.Value;
         return Undefined;
     }
     
     public static Number operator -(Number left, Number right)
     {
-        if (left.IsDefined() && right.IsDefined() && left.Unit == right.Unit)
-            return left with { Value = left.Value - right.Value };
+        if (left.HasPointValue() && right.HasPointValue())
+            return left.Value - right.Value;
         return Undefined;
     }
 
@@ -172,6 +180,6 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
             return leftVal + rightVal;
         if (leftVal.HasValue())
             return leftVal;
-        return ValueUndefined;
+        return rightVal;
     }
 }

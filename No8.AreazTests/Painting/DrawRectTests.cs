@@ -1,17 +1,16 @@
-﻿using System.Drawing;
-using No8.Areaz.Painting;
+﻿using No8.Areaz.Painting;
 
-namespace No8.AreazTests.Canvas;
+namespace No8.AreazTests.Painting;
 
 
 public class DrawRectTests
 {
-    private Areaz.Painting.Canvas _canvas = null!;
+    private Canvas _canvas = null!;
 
     [SetUp]
     public void Setup()
     {
-        _canvas = new Areaz.Painting.Canvas(10, 5);
+        _canvas = new (10, 5);
     }
 
     [Test]

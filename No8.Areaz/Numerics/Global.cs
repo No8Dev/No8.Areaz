@@ -44,7 +44,7 @@ public static class Global
         return Comparer<T>.Default.Compare(value, default) == 0;
     }
 
-    public static bool IsEmpty<T>(this List<T> list) => !list.Any();
+    public static bool IsEmpty<T>(this IEnumerable<T> list) => !list.Any();
     
     public static void ForEachIndex<T>(this List<T> list, Action<T,int> action)
     {

@@ -2,17 +2,17 @@
 using System.Text;
 using No8.Areaz.Painting;
 
-namespace No8.AreazTests.Canvas;
+namespace No8.AreazTests.Painting;
 
 
 public class DrawThingsTests
 {
-    private Areaz.Painting.Canvas _canvas = null!;
+    private Canvas _canvas = null!;
 
     [SetUp]
     public void Setup()
     {
-        _canvas = new Areaz.Painting.Canvas(40, 20);
+        _canvas = new (40, 20);
     }
 
 
