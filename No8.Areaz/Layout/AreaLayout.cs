@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace No8.Areaz.Layout;
 
@@ -12,24 +13,25 @@ public class AreaLayout
     public void Compute(INode node, float containerWidth, float containerHeight)
     {
         ResolveDimensions(node);
-        var (width, widthMeasureMode) =
+        var (availableWidth, widthMeasureMode) =
             CalcMeasureAndMode(node.Placement.ResolvedWidth, node.Plan.MaxWidth, containerWidth);
-        var (height, heightMeasureMode) =
+        var (availableHeight, heightMeasureMode) =
             CalcMeasureAndMode(node.Placement.ResolvedHeight, node.Plan.MaxHeight, containerHeight);
 
         LayoutNode(
             node,
-            width, widthMeasureMode,
-            height, heightMeasureMode,
-            containerWidth, containerHeight);
-        SetPlacementPosition(node, width, height);
+            availableWidth, widthMeasureMode,
+            availableHeight, heightMeasureMode,
+            containerWidth, containerHeight,
+            performLayout: true);
     }
 
     private void LayoutNode(
         INode node, 
         float availableWidth, MeasureMode widthMeasureMode, 
         float availableHeight, MeasureMode heightMeasureMode,
-        float containerWidth, float containerHeight)
+        float containerWidth, float containerHeight,
+        bool performLayout)
     {
         Debug.Assert(
             availableWidth.HasValue() || widthMeasureMode == MeasureMode.Undefined,
@@ -38,49 +40,47 @@ public class AreaLayout
             availableHeight.HasValue() || heightMeasureMode == MeasureMode.Undefined,
             "availableHeight is indefinite so heightMeasureMode must be MeasureMode.Undefined");
 
+        SetPlacementPosition(node, containerWidth, containerHeight);
         SetPlacementPadding(node, containerWidth, containerHeight);
         SetPlacementBorder(node);
-
-        if (node.MeasureNode is not null)
-        {
-            SetMeasuredDimensions_MeasureFunc(
-                node,
-                availableWidth, widthMeasureMode,
-                availableHeight, heightMeasureMode,
-                containerWidth, containerHeight);
+        
+        var isMeasured = SetMeasuredDimensions(
+            node,
+            availableWidth, widthMeasureMode,
+            availableHeight, heightMeasureMode,
+            containerWidth, containerHeight,
+            performLayout);
+        if (isMeasured)     // if node has a measured size, then no need to further calculate algorithm
             return;
-        }
-
-        if (node.Children.Count == 0)
-        {
-            SetMeasuredDimensions_EmptyContainer(
-                node,
-                availableWidth, widthMeasureMode,
-                availableHeight, heightMeasureMode,
-                containerWidth, containerHeight);
-            return;
-        }
-
-        if (SetMeasuredDimensions_FixedSize(
-                node,
-                availableWidth, widthMeasureMode,
-                availableHeight, heightMeasureMode,
-                containerWidth, containerHeight))
-        {
-            return;
-        }
 
         node.Placement.HadOverflow = false;
+        
+        // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
+        var minWidth = node.Plan.MinWidth.Resolve(containerWidth);
+        var maxWidth = node.Plan.MaxWidth.Resolve(containerWidth);
+        var minHeight = node.Plan.MinHeight.Resolve(containerHeight);
+        var maxHeight = node.Plan.MaxHeight.Resolve(containerHeight);
+        
+        // STEP 2: DETERMINE AVAILABLE SIZE IN LAYOUT-DIRECTION AND CROSS-DIRECTION
+        
+        // STEP 3: DETERMINE LAYOUT-DIRECTION LENGTH FOR EACH ITEM
+        // STEP 4: COLLECT FLEX ITEMS INTO FLEX LINES
+        // STEP 5: RESOLVING FLEXIBLE LENGTHS ON LAYOUT-DIRECTION DIRECTION
+        // STEP 6: LAYOUT-DIRECTION JUSTIFICATION & CROSS-DIRECTION SIZE DETERMINATION
+        // STEP 7: CROSS-DIRECTION ALIGNMENT
+        // STEP 8: MULTI-LINE CONTENT ALIGNMENT
+        // STEP 9: COMPUTING FINAL DIMENSIONS
+        // STEP 10: SIZING AND POSITIONING ABSOLUTE ELEMENTS
     }
 
     private void ResolveDimensions(INode node)
     {
-        if (node.Plan.MaxWidth.HasValue() == true && node.Plan.MaxWidth == node.Plan.MinWidth)
+        if (node.Plan.MaxWidth.HasValue() && node.Plan.MaxWidth == node.Plan.MinWidth)
             node.Placement.ResolvedWidth = node.Plan.MaxWidth;
         else
             node.Placement.ResolvedWidth = node.Plan.Width;
         
-        if (node.Plan.MaxHeight.HasValue() == true && node.Plan.MaxHeight == node.Plan.MinHeight)
+        if (node.Plan.MaxHeight.HasValue() && node.Plan.MaxHeight == node.Plan.MinHeight)
             node.Placement.ResolvedHeight = node.Plan.MaxHeight;
         else
             node.Placement.ResolvedHeight = node.Plan.Height;
@@ -102,8 +102,6 @@ public class AreaLayout
             if (pos.Bottom.HasValue())
                 bottom = pos.Bottom.Resolve(height);
         }
-        // TODO Round to pixel
-
         node.Placement.Position = new(start, top, end, bottom);
     }
     
@@ -156,6 +154,47 @@ public class AreaLayout
                  || number.HasPointValue() && number.Value < 0.0f
                  || number.HasPercentValue() && (number.Value < 0.0f || containerSize.HasNoValue()));
     }
+
+    private bool SetMeasuredDimensions(
+        INode node,
+        float availableWidth, MeasureMode widthMeasureMode,
+        float availableHeight, MeasureMode heightMeasureMode,
+        float containerWidth, float containerHeight,
+        bool performLayout)
+    {
+        if (node.MeasureNode is not null)
+        {
+            SetMeasuredDimensions_MeasureFunc(
+                node,
+                availableWidth, widthMeasureMode,
+                availableHeight, heightMeasureMode,
+                containerWidth, containerHeight);
+            return true;
+        }
+
+        if (node.Children.Count == 0)
+        {
+            SetMeasuredDimensions_EmptyContainer(
+                node,
+                availableWidth, widthMeasureMode,
+                availableHeight, heightMeasureMode,
+                containerWidth, containerHeight);
+            return true;
+        }
+
+        if (!performLayout &&
+            SetMeasuredDimensions_FixedSize(
+                node,
+                availableWidth, widthMeasureMode,
+                availableHeight, heightMeasureMode,
+                containerWidth, containerHeight))
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
 
     private void SetMeasuredDimensions_MeasureFunc(
         INode node,
@@ -287,7 +326,7 @@ public class AreaLayout
 
         return false;
     }
-
+    
     private float BoundValue(
         float value, float container,
         Number minSize, Number maxSize)

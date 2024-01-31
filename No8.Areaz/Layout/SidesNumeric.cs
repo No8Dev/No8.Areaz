@@ -1,3 +1,5 @@
+using System.Security.AccessControl;
+
 namespace No8.Areaz.Layout;
 
 public record SidesNumeric
@@ -78,6 +80,16 @@ public record SidesNumeric
             return this[side];
 
         return defaultValue ?? Number.Undefined;
+    }
+
+    public (float start, float top, float end, float bottom)
+        Resolve(float containerWidth, float containerHeight)
+    {
+        return (
+            Start.Resolve(containerWidth),
+            Top.Resolve(containerHeight),
+            End.Resolve(containerWidth),
+            Bottom.Resolve(containerHeight));
     }
 
     public override string ToString()

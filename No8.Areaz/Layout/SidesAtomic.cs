@@ -50,5 +50,13 @@ namespace No8.Areaz.Layout
                     _ => throw new ArgumentException("Unsupported side", nameof(side))
                 };
         }
+
+        public void Deconstruct(out int start, out int top, out int end, out int bottom)
+        {
+            start = Start;
+            top = Top;
+            end = End;
+            bottom = Bottom;
+        }
     }
 }

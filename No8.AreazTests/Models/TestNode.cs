@@ -15,6 +15,7 @@ public class TestNode : INode
     
     public IEnumerator<INode> GetEnumerator() => _children.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public void Add(TestNode node) => _children.Add(node);
 
     public PlannedLayout Plan { get; init; }
     public PlacementLayout Placement { get; } = new();
