@@ -42,44 +42,10 @@ public class CanvasLayout : ILayoutManager
 
         var instructions = node.Instructions as Instructions ?? DefaultInstructions;
 
-        var (x, width, _) = Calc(availableSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
-        var (y, height, _) = Calc(availableSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
+        var (x, width, _) = Tree.ResolveDimension(availableSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
+        var (y, height, _) = Tree.ResolveDimension(availableSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
 
         node.Bounds = new((int)x, (int)y, (int)width, (int)height);
-    }
-
-    // ReSharper disable once UnusedTupleComponentInReturnValue
-    /// <summary>
-    ///     Calculate where this node is to be painted on the canvas        
-    /// </summary>
-    private (float start, float size, bool overflow) 
-        Calc(float available, float measured, float offset, Align align)
-    {
-        available -= offset;
-        bool overflow = measured > available;
-
-        if (available <= 0)
-            return (offset, measured, overflow: true);
-        
-        switch (align)
-        {
-            case Align.Start:
-                return (offset, measured, overflow);
-            case Align.End:
-                if (overflow)
-                    return (offset, available, overflow);
-                return (available - measured, measured, overflow);
-            case Align.Center:
-                if (measured > available)
-                    return (offset, available, overflow);
-                var remaining = available - measured;
-                return (offset + MathF.Floor(remaining / 2f), measured, overflow);
-            case Align.Stretch:
-                return (offset, available, overflow);
-                
-            default:
-                throw new ArgumentOutOfRangeException(nameof(align), "Invalid alignment");
-        }
     }
 
     /// <summary>

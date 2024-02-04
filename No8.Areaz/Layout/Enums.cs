@@ -11,28 +11,8 @@ public enum Side
     All
 }
 
-public enum PositionType
-{
-    /// <summary>
-    ///     Relative to parent
-    /// </summary>
-    Relative,
-    
-    /// <summary>
-    ///     Absolute position in canvas
-    /// </summary>
-    Absolute
-}
-
 public enum Align
 {
     Start, End, Center, Stretch
 }
 
-public enum MeasureMode
-{
-    Unknown,
-    Exactly,
-    AtMost,
-    Undefined
-}

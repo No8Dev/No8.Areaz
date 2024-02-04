@@ -14,9 +14,6 @@ public class TestNode : INode
     public TestNode() { }
     public TestNode(string name) { Name = name; }
 
-    public TestNode(out TestNode node) { node = this; }
-    public TestNode(out TestNode node, string name) : this(name) { node = this; }
-
     public override string ToString() { return ToString(new ()); }
 
     public string ToString(StringBuilder sb, bool layout = false)
@@ -27,6 +24,8 @@ public class TestNode : INode
         return sb.ToString();
     }
 
+    public ILayoutManager LayoutManager { get; set; } = CanvasLayout.Default;
+
     public SizeF Measure(SizeF availableSize)
     {
         return Size.IsEmpty ? availableSize : Size;
@@ -35,7 +34,7 @@ public class TestNode : INode
     private void DoDraw(Canvas canvas, Rectangle bounds, LineSet lineSet)
     {
         if (bounds.Size.IsEmpty) return;
-        if (bounds.Height == 0 || bounds.Width == 0)
+        if (bounds.Height <= 1 || bounds.Width <= 1)
             canvas.DrawLine(bounds, lineSet);
         else 
             canvas.DrawRectangle(bounds, lineSet);
@@ -49,3 +48,4 @@ public class TestNode : INode
             canvas.DrawString(rect.X + 1, rect.Y, $"[{Name}]");
     }
 }
+

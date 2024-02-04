@@ -209,7 +209,9 @@ public class Canvas
         Rectangle rect,
         LineSet   lineSet    = LineSet.Single,
         Color?    foreground = null,
-        Color?    background = null) => DrawLine(rect.Left, rect.Top, rect.Right, rect.Bottom, lineSet, foreground, background);
+        Color?    background = null) 
+        => DrawLine(rect.Left, rect.Top, rect.Right - 1, rect.Bottom - 1, lineSet, foreground, background);
+    
     public void DrawLine(int startX, int startY, int endX, int endY,
                           LineSet lineSet = LineSet.Single,
                           Color? foreground = null,

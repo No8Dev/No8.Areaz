@@ -21,7 +21,7 @@ public class Tree
             LayoutInternal(child, availableSize);
 
         treeNode.MeasuredSize = treeNode.Node.Measure(availableSize);
-        treeNode.Node.LayoutManager().Measure(treeNode, treeNode.Children, availableSize);
+        treeNode.Node.LayoutManager.Measure(treeNode, treeNode.Children, availableSize);
     }
 
     public static void Paint(Canvas canvas, TreeNode treeNode)
@@ -31,6 +31,39 @@ public class Tree
             Paint(canvas, child);
     }
 
+    // ReSharper disable once UnusedTupleComponentInReturnValue
+    /// <summary>
+    ///     Calculate where this node is to be painted on the canvas        
+    /// </summary>
+    public static (float start, float size, bool overflow) 
+        ResolveDimension(float available, float measured, float offset, Align align)
+    {
+        available -= offset;
+        bool overflow = measured > available;
+
+        if (available <= 0)
+            return (offset, measured, overflow: true);
+        
+        switch (align)
+        {
+            case Align.Start:
+                return (offset, measured, overflow);
+            case Align.End:
+                if (overflow)
+                    return (offset, available, overflow);
+                return (available - measured, measured, overflow);
+            case Align.Center:
+                if (measured > available)
+                    return (offset, available, overflow);
+                var remaining = available - measured;
+                return (offset + MathF.Floor(remaining / 2f), measured, overflow);
+            case Align.Stretch:
+                return (offset, available, overflow);
+                
+            default:
+                throw new ArgumentOutOfRangeException(nameof(align), "Invalid alignment");
+        }
+    }
 }
 
 
@@ -80,11 +113,3 @@ public class TreeNode : IEnumerable<TreeNode>
         return this;
     }
 }
-
-public interface ILayoutManager
-{
-    void Measure(TreeNode container, IReadOnlyList<TreeNode> children, SizeF availableSize);
-    
-    public interface ILayoutInstructions { }
-}
-
