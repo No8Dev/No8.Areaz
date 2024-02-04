@@ -1,65 +1,51 @@
+/*
 using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace No8.Areaz.Layout;
 
 public class AreaLayout
 {
-    public static void Compute(INode node, int width = 40, int height = 12)
+    public static void Compute(NodeWithLayout nl, int width = 40, int height = 12)
     {
-        new AreaLayout().Compute(node, width, height);
+        new AreaLayout().Compute(nl, width, height);
     }
     
-    public void Compute(INode node, float containerWidth, float containerHeight)
+    public void Compute(NodeWithLayout nl, float containerWidth, float containerHeight)
     {
-        ResolveDimensions(node);
-        var (availableWidth, widthMeasureMode) =
-            CalcMeasureAndMode(node.Placement.ResolvedWidth, node.Plan.MaxWidth, containerWidth);
-        var (availableHeight, heightMeasureMode) =
-            CalcMeasureAndMode(node.Placement.ResolvedHeight, node.Plan.MaxHeight, containerHeight);
+        ResolveDimensions(nl, containerWidth, containerHeight);
 
         LayoutNode(
-            node,
-            availableWidth, widthMeasureMode,
-            availableHeight, heightMeasureMode,
+            nl,
             containerWidth, containerHeight,
             performLayout: true);
     }
 
     private void LayoutNode(
-        INode node, 
-        float availableWidth, MeasureMode widthMeasureMode, 
-        float availableHeight, MeasureMode heightMeasureMode,
+        NodeWithLayout nl, 
         float containerWidth, float containerHeight,
         bool performLayout)
     {
         Debug.Assert(
-            availableWidth.HasValue() || widthMeasureMode == MeasureMode.Undefined,
-            "availableWidth is indefinite so widthMeasureMode must be MeasureMode.Undefined");
+            nl.WidthAvailable.HasValue() || nl.WidthMeasureMode == MeasureMode.Undefined,
+            "WidthAvailable is indefinite so WidthMeasureMode must be MeasureMode.Undefined");
         Debug.Assert(
-            availableHeight.HasValue() || heightMeasureMode == MeasureMode.Undefined,
-            "availableHeight is indefinite so heightMeasureMode must be MeasureMode.Undefined");
+            nl.HeightAvailable.HasValue() || nl.HeightMeasureMode == MeasureMode.Undefined,
+            "HeightAvailable is indefinite so HeightMeasureMode must be MeasureMode.Undefined");
 
-        SetPlacementPosition(node, containerWidth, containerHeight);
-        SetPlacementPadding(node, containerWidth, containerHeight);
-        SetPlacementBorder(node);
-        
         var isMeasured = SetMeasuredDimensions(
-            node,
-            availableWidth, widthMeasureMode,
-            availableHeight, heightMeasureMode,
+            nl,
             containerWidth, containerHeight,
             performLayout);
         if (isMeasured)     // if node has a measured size, then no need to further calculate algorithm
             return;
 
-        node.Placement.HadOverflow = false;
+        nl.Node.Placement.HadOverflow = false;
         
         // STEP 1: CALCULATE VALUES FOR REMAINDER OF ALGORITHM
-        var minWidth = node.Plan.MinWidth.Resolve(containerWidth);
-        var maxWidth = node.Plan.MaxWidth.Resolve(containerWidth);
-        var minHeight = node.Plan.MinHeight.Resolve(containerHeight);
-        var maxHeight = node.Plan.MaxHeight.Resolve(containerHeight);
+        var minWidth = nl.Plan.MinWidth.Resolve(containerWidth);
+        var maxWidth = nl.Plan.MaxWidth.Resolve(containerWidth);
+        var minHeight = nl.Plan.MinHeight.Resolve(containerHeight);
+        var maxHeight = nl.Plan.MaxHeight.Resolve(containerHeight);
         
         // STEP 2: DETERMINE AVAILABLE SIZE IN LAYOUT-DIRECTION AND CROSS-DIRECTION
         
@@ -73,62 +59,72 @@ public class AreaLayout
         // STEP 10: SIZING AND POSITIONING ABSOLUTE ELEMENTS
     }
 
-    private void ResolveDimensions(INode node)
+    private void ResolveDimensions(NodeWithLayout nl, float containerWidth, float containerHeight)
     {
-        if (node.Plan.MaxWidth.HasValue() && node.Plan.MaxWidth == node.Plan.MinWidth)
-            node.Placement.ResolvedWidth = node.Plan.MaxWidth;
+        if (nl.Plan.MaxWidth.HasValue() && nl.Plan.MaxWidth == nl.Plan.MinWidth)
+            nl.WidthResolved = nl.Plan.MaxWidth;
         else
-            node.Placement.ResolvedWidth = node.Plan.Width;
+            nl.WidthResolved = nl.Plan.Width;
+
+        if (nl.Plan.MaxHeight.HasValue() && nl.Plan.MaxHeight == nl.Plan.MinHeight)
+            nl.HeightResolved = nl.Plan.MaxHeight;
+        else
+            nl.HeightResolved = nl.Plan.Height;
         
-        if (node.Plan.MaxHeight.HasValue() && node.Plan.MaxHeight == node.Plan.MinHeight)
-            node.Placement.ResolvedHeight = node.Plan.MaxHeight;
-        else
-            node.Placement.ResolvedHeight = node.Plan.Height;
+        (nl.WidthAvailable, nl.WidthMeasureMode) = CalcMeasureAndMode(nl.WidthResolved, nl.Plan.MaxWidth, containerWidth);
+        (nl.HeightAvailable, nl.HeightMeasureMode) = CalcMeasureAndMode(nl.HeightResolved, nl.Plan.MaxHeight, containerHeight);
+
+        SetPlacementBounds(nl, containerWidth, containerHeight);
+        SetPlacementPadding(nl, containerWidth, containerHeight);
+        SetPlacementBorder(nl);
     }
 
-    private void SetPlacementPosition(INode node, float width, float height)
+    private void SetPlacementBounds(NodeWithLayout nl, float containerWidth, float containerHeight)
     {
-        float start = 0, end = width;
-        float top = 0f, bottom = height;
-        if (node.Plan.Position is not null)
+        int start = 0, end = (int)containerWidth;
+        int top = 0, bottom = (int)containerHeight;
+        
+        if (nl.Plan.Position is not null)
         {
-            var pos = node.Plan.Position!;
+            var pos = nl.Plan.Position!;
             if (pos.Start.HasValue())
-                start = pos.Start.Resolve(width);
+                start = (int)pos.Start.Resolve(containerWidth);
             if (pos.End.HasValue())
-                end = pos.End.Resolve(width);
+                end = (int)pos.End.Resolve(containerWidth);
             if (pos.Top.HasValue())
-                top = pos.Top.Resolve(height);
+                top = (int)pos.Top.Resolve(containerHeight);
             if (pos.Bottom.HasValue())
-                bottom = pos.Bottom.Resolve(height);
+                bottom = (int)pos.Bottom.Resolve(containerHeight);
         }
-        node.Placement.Position = new(start, top, end, bottom);
+        
+        nl.Node.Placement.Bounds = new(start, top, end, bottom);    
     }
     
-    private void SetPlacementPadding(INode node, float width, float height)
+    private void SetPlacementPadding(NodeWithLayout nl, float containerWidth, float containerHeight)
     {
-        float start = 0f, end = 0f;
-        float top = 0f, bottom = 0f;
-
-        if (node.Plan.Padding is not null)
+        if (nl.Plan.Padding is not null)
         {
-            var padding = node.Plan.Padding!;
+            int start = 0, end = 0;
+            int top = 0, bottom = 0;
+            
+            var padding = nl.Plan.Padding!;
             if (padding.Start.HasValue())
-                start = padding.Start.Resolve(width);
+                start = (int)padding.Start.Resolve(containerWidth);
             if (padding.End.HasValue())
-                end = padding.End.Resolve(width);
+                end = (int)padding.End.Resolve(containerWidth);
             if (padding.Top.HasValue())
-                top = padding.Top.Resolve(height);
+                top = (int)padding.Top.Resolve(containerHeight);
             if (padding.Bottom.HasValue())
-                bottom = padding.Bottom.Resolve(height);
+                bottom = (int)padding.Bottom.Resolve(containerHeight);
+            nl.Node.Placement.Padding = new (start, top, end, bottom);
         }
-
-        node.Placement.Padding = new SidesNumeric(start, top, end, bottom);
+        else
+            nl.Node.Placement.Padding = SidesInt.Zero;
     }    
     
-    private void SetPlacementBorder(INode node)
+    private void SetPlacementBorder(NodeWithLayout nl)
     {
-        node.Placement.Border = node.Plan.Border ?? SidesAtomic.Zero;
+        nl.Node.Placement.Border = nl.Plan.Border ?? SidesInt.Zero;
     }
 
    
@@ -156,38 +152,24 @@ public class AreaLayout
     }
 
     private bool SetMeasuredDimensions(
-        INode node,
-        float availableWidth, MeasureMode widthMeasureMode,
-        float availableHeight, MeasureMode heightMeasureMode,
+        NodeWithLayout nl,
         float containerWidth, float containerHeight,
         bool performLayout)
     {
-        if (node.MeasureNode is not null)
+        if (nl.Node.MeasureNode is not null)
         {
-            SetMeasuredDimensions_MeasureFunc(
-                node,
-                availableWidth, widthMeasureMode,
-                availableHeight, heightMeasureMode,
-                containerWidth, containerHeight);
+            SetMeasuredDimensions_MeasureFunc(nl, containerWidth, containerHeight);
             return true;
         }
 
-        if (node.Children.Count == 0)
+        if (nl.Children.Count == 0)
         {
-            SetMeasuredDimensions_EmptyContainer(
-                node,
-                availableWidth, widthMeasureMode,
-                availableHeight, heightMeasureMode,
-                containerWidth, containerHeight);
+            SetMeasuredDimensions_EmptyContainer(nl, containerWidth, containerHeight);
             return true;
         }
 
         if (!performLayout &&
-            SetMeasuredDimensions_FixedSize(
-                node,
-                availableWidth, widthMeasureMode,
-                availableHeight, heightMeasureMode,
-                containerWidth, containerHeight))
+            SetMeasuredDimensions_FixedSize(nl, containerWidth, containerHeight))
         {
             return true;
         }
@@ -197,66 +179,50 @@ public class AreaLayout
     
 
     private void SetMeasuredDimensions_MeasureFunc(
-        INode node,
-        float availableWidth, MeasureMode widthMeasureMode, 
-        float availableHeight, MeasureMode heightMeasureMode,
+        NodeWithLayout nl,
         float containerWidth, float containerHeight)
     {
         Debug.Assert(
-            node.MeasureNode != null,
+            nl.Node.MeasureNode != null,
             "Expected node to have custom measure function");
-        Debug.Assert(
-            node.Placement.Border != null,
-            "Expected node to have placement border set");
-        Debug.Assert(
-            node.Placement.Padding != null,
-            "Expected node to have placement padding set");
 
-        float paddingAndBorderRow =
-            node.Placement.Border.Start +
-            node.Placement.Padding.Start +
-            node.Placement.Padding.End +
-            node.Placement.Border.End;
-        float paddingAndBorderCol =
-            node.Placement.Border.Top +
-            node.Placement.Padding.Top +
-            node.Placement.Padding.Bottom + 
-            node.Placement.Border.Bottom;
-
-        var innerWidth = availableWidth.HasValue()
-            ? availableWidth
-            : FloatMax(0f, availableWidth - paddingAndBorderRow);
-        var innerHeight = availableHeight.HasValue()
-            ? availableHeight
-            : FloatMax(0f, availableHeight - paddingAndBorderCol);
+        var paddingAndBorder = nl.Node.Placement.BorderAndPadding;
+        var innerWidth = nl.WidthAvailable.HasNoValue()
+            ? nl.WidthAvailable
+            : FloatMax(0f, nl.WidthAvailable - paddingAndBorder.Start - paddingAndBorder.End);
+        var innerHeight = nl.HeightAvailable.HasNoValue()
+            ? nl.HeightAvailable
+            : FloatMax(0f, nl.HeightAvailable - paddingAndBorder.Top - paddingAndBorder.Bottom);
         
-        if (widthMeasureMode == MeasureMode.Exactly &&
-            heightMeasureMode == MeasureMode.Exactly)
+        if (nl.WidthMeasureMode == MeasureMode.Exactly && 
+            nl.HeightMeasureMode == MeasureMode.Exactly)
         {
             // Don't bother sizing the text if both dimensions are already defined.
-            node.Placement.MeasuredWidth =
-                BoundValue(availableWidth, containerWidth, node.Plan.MinWidth, node.Plan.MaxWidth);
-            node.Placement.MeasuredHeight =
-                BoundValue(availableHeight, containerHeight, node.Plan.MinHeight, node.Plan.MaxHeight);
+            nl.Node.Placement.Bounds = nl.Node.Placement.Bounds with
+            {
+                Width = (int)BoundValue(nl.WidthAvailable, containerWidth, nl.Plan.MinWidth, nl.Plan.MaxWidth), 
+                Height = (int)BoundValue(nl.HeightAvailable, containerHeight, nl.Plan.MinHeight, nl.Plan.MaxHeight)
+            };
         }
         else
         {
             // Measure the text under the current constraints.
             var measuredSize =
-                node.MeasureNode!.Invoke(
-                    node, 
-                    innerWidth, widthMeasureMode, 
-                    innerHeight, heightMeasureMode);
-            float width = widthMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
-                ? measuredSize.Width + paddingAndBorderRow
-                : availableWidth;
-            float height = heightMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
-                ? measuredSize.Height + paddingAndBorderCol
-                : availableHeight;
-            node.Placement.MeasuredWidth =
-                BoundValue(width, containerWidth, node.Plan.MinWidth, node.Plan.MaxWidth);
-            node.Placement.MeasuredHeight =
-                BoundValue(height, containerHeight, node.Plan.MinHeight, node.Plan.MaxHeight);
+                nl.Node.MeasureNode!.Invoke(
+                    nl.Node, 
+                    innerWidth, nl.WidthMeasureMode, 
+                    innerHeight, nl.HeightMeasureMode);
+            float width = nl.WidthMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
+                ? measuredSize.Width + paddingAndBorder.Start + paddingAndBorder.End
+                : nl.WidthAvailable;
+            float height = nl.HeightMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
+                ? measuredSize.Height + paddingAndBorder.Top + paddingAndBorder.Bottom
+                : nl.HeightAvailable;
+            nl.Node.Placement.Bounds = nl.Node.Placement.Bounds with
+            {
+                Width = (int)BoundValue(width, containerWidth, nl.Plan.MinWidth, nl.Plan.MaxWidth), 
+                Height = (int)BoundValue(height, containerHeight, nl.Plan.MinHeight, nl.Plan.MaxHeight)
+            };
         }
     }
 
@@ -265,61 +231,45 @@ public class AreaLayout
     ///     or the minimum size as indicated by the padding and border sizes.
     /// </summary>
     private void SetMeasuredDimensions_EmptyContainer(
-        INode node,
-        float availableWidth, MeasureMode widthMeasureMode,
-        float availableHeight, MeasureMode heightMeasureMode,
+        NodeWithLayout nl,
         float containerWidth, float containerHeight)
     {
-        Debug.Assert(
-            node.Placement.Border != null,
-            "Expected node to have placement border set");
-        Debug.Assert(
-            node.Placement.Padding != null,
-            "Expected node to have placement padding set");
+        var paddingAndBorder = nl.Node.Placement.BorderAndPadding;
         
-        float paddingAndBorderRow =
-            node.Placement.Border.Start +
-            node.Placement.Padding.Start +
-            node.Placement.Padding.End +
-            node.Placement.Border.End;
-        float paddingAndBorderCol =
-            node.Placement.Border.Top +
-            node.Placement.Padding.Top +
-            node.Placement.Padding.Bottom + 
-            node.Placement.Border.Bottom;
+        float width = nl.WidthMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
+            ? paddingAndBorder.Start + paddingAndBorder.End
+            : nl.WidthAvailable;
+        float height = nl.HeightMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
+            ? paddingAndBorder.Top + paddingAndBorder.Bottom
+            : nl.HeightAvailable;
         
-        float width = widthMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
-            ? paddingAndBorderRow
-            : availableWidth;
-        float height = heightMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost
-            ? paddingAndBorderCol
-            : availableHeight;
-        node.Placement.MeasuredWidth =
-            BoundValue(width, containerWidth, node.Plan.MinWidth, node.Plan.MaxWidth);
-        node.Placement.MeasuredHeight =
-            BoundValue(height, containerHeight, node.Plan.MinHeight, node.Plan.MaxHeight);
+        nl.Node.Placement.Bounds = nl.Node.Placement.Bounds with
+        {
+            Width = (int)BoundValue(width, containerWidth, nl.Plan.MinWidth, nl.Plan.MaxWidth), 
+            Height = (int)BoundValue(height, containerHeight, nl.Plan.MinHeight, nl.Plan.MaxHeight)
+        };
     }
 
     private bool SetMeasuredDimensions_FixedSize(
-        INode node,
-        float availableWidth, MeasureMode widthMeasureMode,
-        float availableHeight, MeasureMode heightMeasureMode,
+        NodeWithLayout nl,
         float containerWidth, float containerHeight)
     {
-        if ((widthMeasureMode == MeasureMode.Exactly && heightMeasureMode == MeasureMode.Exactly) ||
-            (availableWidth.HasValue() && widthMeasureMode == MeasureMode.AtMost && availableWidth <= 0f) ||
-            (availableHeight.HasValue() && heightMeasureMode == MeasureMode.AtMost && availableHeight >= 0f))
+        if ((nl.WidthMeasureMode == MeasureMode.Exactly && nl.HeightMeasureMode == MeasureMode.Exactly) ||
+            (nl.WidthAvailable.HasValue() && nl.WidthMeasureMode == MeasureMode.AtMost && nl.WidthAvailable <= 0f) ||
+            (nl.HeightAvailable.HasValue() && nl.HeightMeasureMode == MeasureMode.AtMost && nl.HeightAvailable >= 0f))
         {
-            float width = widthMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost && availableWidth < 0f
+            float width = nl.WidthMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost && nl.WidthAvailable < 0f
                 ? 0f
-                : availableWidth;
-            float height = heightMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost && availableHeight < 0f
+                : nl.WidthAvailable;
+            float height = nl.HeightMeasureMode is MeasureMode.Undefined or MeasureMode.AtMost && nl.HeightAvailable < 0f
                 ? 0f
-                : availableHeight;
-            node.Placement.MeasuredWidth =
-                BoundValue(width, containerWidth, node.Plan.MinWidth, node.Plan.MaxWidth);
-            node.Placement.MeasuredHeight =
-                BoundValue(height, containerHeight, node.Plan.MinHeight, node.Plan.MaxHeight);
+                : nl.HeightAvailable;
+            
+            nl.Node.Placement.Bounds = nl.Node.Placement.Bounds with
+            {
+                Width = (int)BoundValue(width, containerWidth, nl.Plan.MinWidth, nl.Plan.MaxWidth), 
+                Height = (int)BoundValue(height, containerHeight, nl.Plan.MinHeight, nl.Plan.MaxHeight)
+            };
 
             return true;
         }
@@ -342,3 +292,4 @@ public class AreaLayout
         return value;
     }
 }
+*/

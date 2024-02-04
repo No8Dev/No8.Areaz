@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Drawing;
 using System.Text;
-using No8.Areaz;
 using No8.Areaz.Layout;
 using No8.Areaz.Painting;
 
@@ -9,41 +8,28 @@ namespace No8.AreazTests.Models;
 
 public class TestNode : INode
 {
-    private List<TestNode> _children = new ();
-
     public string Name { get; set; } = string.Empty;
+    public Size Size { get; set; }
     
-    public IEnumerator<INode> GetEnumerator() => _children.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    public void Add(TestNode node) => _children.Add(node);
+    public TestNode() { }
+    public TestNode(string name) { Name = name; }
 
-    public PlannedLayout Plan { get; init; }
-    public PlacementLayout Placement { get; } = new();
-    public IReadOnlyList<INode> Children => _children.AsReadOnly();
-    public MeasureFunc? MeasureNode { get; set; }
+    public TestNode(out TestNode node) { node = this; }
+    public TestNode(out TestNode node, string name) : this(name) { node = this; }
 
+    public override string ToString() { return ToString(new ()); }
 
-    public TestNode(string name, PlannedLayout? plan = null)
+    public string ToString(StringBuilder sb, bool layout = false)
     {
-        Name = name;
-        Plan = plan ?? new();
+        sb.Append($"{GetType().Name}");
+        if (!string.IsNullOrEmpty(Name)) sb.Append($" Name[{Name}]");
+
+        return sb.ToString();
     }
 
-    public TestNode(PlannedLayout? plan = null)
+    public SizeF Measure(SizeF availableSize)
     {
-        Plan = plan ?? new();
-    }
-    
-    public TestNode(out TestNode node, string name, PlannedLayout? plan = null) 
-        : this(name, plan)
-    {
-        node = this;
-    }
-
-    public TestNode(out TestNode node, PlannedLayout? plan = null) 
-        : this(plan)
-    {
-        node = this;
+        return Size.IsEmpty ? availableSize : Size;
     }
 
     private void DoDraw(Canvas canvas, Rectangle bounds, LineSet lineSet)
@@ -54,54 +40,12 @@ public class TestNode : INode
         else 
             canvas.DrawRectangle(bounds, lineSet);
     }
-    
-    public void OnDraw(Canvas canvas)
+
+    public void Paint(Canvas canvas, Rectangle rect)
     {
-        canvas.FillRectangle(
-            Placement.Bounds, 
-            Name.Length > 0 ? Rune.GetRuneAt(Name, 0) : Pixel.Block.LightShade);
-
-        DoDraw(canvas, Placement.Bounds, LineSet.Single);
-        DoDraw(canvas, Placement.ContentBounds, LineSet.Double);
-    }
-    
-    public override string ToString() { return ToString(new StringBuilder(), true, false); }
-
-    public string ToString(StringBuilder sb, bool plan, bool layout)
-    {
-        sb.Append($"{GetType().Name}");
-        if (!string.IsNullOrEmpty(Name)) sb.Append($" Name[{Name}]");
-        if (plan)
-            sb.Append($" {nameof(Plan)}[{Plan}]");
-        if (layout)
-            sb.Append($" {nameof(Placement)}[{Placement}]");
-        AppendProperties(sb);
-
-        if (_children.Count > 0)
-        {
-            sb.AppendLine();
-            AppendChildren(sb, plan, layout);
-        }
-
-        return sb.ToString();
-    }
-
-    protected virtual void AppendProperties(StringBuilder sb)
-    {
-        /*
-        if (HasFocus) sb.Append($" {nameof(HasFocus)}={HasFocus}");
-        if (!IsEnabled) sb.Append($" {nameof(IsEnabled)}={IsEnabled}");
-        if (ForegroundBrush != null) sb.Append($" {nameof(ForegroundBrush)}={ForegroundBrush}");
-        if (BackgroundBrush != null) sb.Append($" {nameof(BackgroundBrush)}={BackgroundBrush}");
-        */
-    }
-
-    protected void AppendChildren(StringBuilder sb, bool plan, bool layout)
-    {
-        foreach (var child in _children)
-        {
-            child.ToString(sb, plan, layout);
-            sb.AppendLine();
-        }
+        canvas.FillRectangle(rect, Pixel.Block.LightShade);
+        DoDraw(canvas, rect, LineSet.Single);
+        if (Name.Length > 0)
+            canvas.DrawString(rect.X + 1, rect.Y, $"[{Name}]");
     }
 }

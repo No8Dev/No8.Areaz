@@ -1,6 +1,8 @@
+using System.Drawing;
+
 namespace No8.Areaz.Layout;
 
-public class GridLayout : PlannedLayout
+public class GridLayout : ILayoutManager
 {
     public readonly List<GridTemplateTrack> TemplateRows = new();
     public readonly List<GridTemplateTrack> TemplateCols = new();
@@ -18,6 +20,11 @@ public class GridLayout : PlannedLayout
     {
         get => _cellColGap;
         set => _cellColGap = value == 0 ? 0 : 1;
+    }
+
+    public void Measure(TreeNode container, IReadOnlyList<TreeNode> children, SizeF availableSize)
+    {
+        throw new NotImplementedException();
     }
 }
 

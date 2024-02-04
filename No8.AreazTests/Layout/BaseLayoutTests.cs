@@ -1,4 +1,4 @@
-using System.Text;
+using System.Drawing;
 using No8.Areaz.Layout;
 using No8.Areaz.Painting;
 using No8.AreazTests.Models;
@@ -7,24 +7,25 @@ namespace No8.AreazTests.Layout
 {
     public class BaseLayoutTests
     {
-        protected Canvas Canvas { get; private set; }
+        protected Canvas Canvas { get; private set; } = null!;
 
-        protected void Draw(TestNode node, int? width = null, int? height = null)
+        protected void Draw(TreeNode treeNode, Size? size = null)
         {
-            width ??= node.Placement.Bounds.Width;
-            height ??= node.Placement.Bounds.Height;
-            if (width == 0) width = 40;
-            if (height == 0) height = 12;
+            var sz = size ?? treeNode.Bounds.Size;
+            if (sz.IsEmpty)
+                sz = new(40, 12);
+            else if (sz.Width <= 0)
+                sz = sz with { Width = 40 };
+            else if (sz.Height <= 0)
+                sz = sz with { Height = 12 };
 
-            Canvas = new Canvas(width.Value, height.Value);
-            var engine = new AreaLayout();
-            engine.Compute(node, width.Value, height.Value);
-        
-            node.OnDraw(Canvas);
-        
-            TestContext.WriteLine(node.ToString(new StringBuilder(), true, false));
+            Canvas = new (sz.Width, sz.Height);
+            
+            Tree.Layout(treeNode, sz);
+
+            Tree.Paint(Canvas, treeNode);
+            
             TestContext.WriteLine(Canvas.ToString());
-            TestContext.WriteLine(node.ToString(new StringBuilder(), false, true));
         }
     }
 }

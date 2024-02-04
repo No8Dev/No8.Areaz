@@ -52,6 +52,9 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool HasNoPointValue() => Unit != UoM.Points || Value.HasNoValue();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsZeroPoints() => Unit == UoM.Points && Value == 0f;
     
     
     public bool HasPointValue(out float value)

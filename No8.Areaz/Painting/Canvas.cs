@@ -169,9 +169,9 @@ public class Canvas
         var top = rect.Top;
         var bottom = rect.Bottom;
 
-        for (var y = top; y <= bottom; y++)
+        for (var y = top; y < bottom; y++)
         {
-            for (var x = left; x <= right; x++)
+            for (var x = left; x < right; x++)
             {
                 WriteAt(x, y, chr ?? Zero, foreground, background);
             }

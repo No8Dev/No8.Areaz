@@ -1,20 +1,16 @@
 using System.Drawing;
+using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
-public interface INode : IEnumerable<INode>
+public interface INode
 {
-    PlannedLayout Plan { get; }
-    PlacementLayout Placement { get; }
+    ILayoutManager LayoutManager() => CanvasLayout.Default;
+
+    /// <summary>
+    ///     Measure width and height of node based on available size of parent node 
+    /// </summary>
+    SizeF Measure(SizeF availableSize);
     
-    IReadOnlyList<INode> Children { get; }
-
-    MeasureFunc? MeasureNode { get; set; }
+    void Paint(Canvas canvas, Rectangle rect);
 }
-
-public delegate SizeF MeasureFunc(
-    INode       node,
-    float       width,
-    MeasureMode widthMode,
-    float       height,
-    MeasureMode heightMode);

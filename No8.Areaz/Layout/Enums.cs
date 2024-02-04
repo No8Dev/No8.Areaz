@@ -31,7 +31,8 @@ public enum Align
 
 public enum MeasureMode
 {
-    Undefined = -1,
-    Exactly   = 0,
-    AtMost    = 1
+    Unknown,
+    Exactly,
+    AtMost,
+    Undefined
 }

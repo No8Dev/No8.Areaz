@@ -1,45 +1,25 @@
-using System.Security.AccessControl;
-
 namespace No8.Areaz.Layout;
 
-public record SidesNumeric
+public record SidesNumeric(
+    Number Start, 
+    Number Top, 
+    Number End, 
+    Number Bottom)
 {
     public static SidesNumeric Zero => new(0 );
     public static SidesNumeric One => new(1 );
 
     public static SidesNumeric Create(Number value) => new(value);
 
-    public static SidesNumeric Create(
-        Number? start = null,
-        Number? top = null,
-        Number? end = null,
-        Number? bottom = null,
-        Number? horizontal = null,
-        Number? vertical = null,
-        Number? all = null) =>
-        new(start, top, end, bottom, horizontal, vertical, all);
-
     /// <summary>
     /// All sides have the same value
     /// </summary>
-    public SidesNumeric(Number value) { Start = Top = End = Bottom = value; }
+    public SidesNumeric(Number value) : this(value, value, value, value) 
+    { }
 
-    public SidesNumeric(Number? start = null,
-        Number? top = null,
-        Number? end = null,
-        Number? bottom = null,
-        Number? horizontal = null,
-        Number? vertical = null,
-        Number? all = null)
-    {
-        if (all != null) Start = End = Top = Bottom = all;
-        if (horizontal != null) Start = End = horizontal;
-        if (vertical != null) Top = Bottom = vertical;
-        if (start != null) Start = start;
-        if (end != null) End = end;
-        if (top != null) Top = top;
-        if (bottom != null) Bottom = bottom;
-    }
+    public SidesNumeric(Number horizontal, Number vertical) 
+        : this (horizontal, vertical, horizontal, vertical)
+    { }
 
     public SidesNumeric(SidesNumeric other)
     {
@@ -91,6 +71,12 @@ public record SidesNumeric
             End.Resolve(containerWidth),
             Bottom.Resolve(containerHeight));
     }
+
+    public bool IsZero =>
+        Start.IsZeroPoints() &&
+        Top.IsZeroPoints() &&
+        End.IsZeroPoints() &&
+        Bottom.IsZeroPoints();
 
     public override string ToString()
     {
