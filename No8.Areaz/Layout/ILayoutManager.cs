@@ -20,7 +20,7 @@ namespace No8.Areaz.Layout
             SidesInt? Margin { get; init; }
         }
 
-        void MeasureIn(TreeNode container, IReadOnlyList<TreeNode> children);
-        void MeasureOut(TreeNode container, IReadOnlyList<TreeNode> children);
+        void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children);
+        void MeasureOut(LayoutNode container, IReadOnlyList<LayoutNode> children);
     }
 }

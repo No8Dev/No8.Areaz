@@ -12,7 +12,7 @@ public class CanvasLayoutTests : BaseLayoutTests
     [Test]
     public void CanvasNode_Background()
     {
-        var root = new TreeNode(
+        var root = new LayoutNode(
             new CanvasNode { Name = "Root", BackgroundRune = Pixel.Block.QuadrantULeftLRight }
         );
         
@@ -38,9 +38,10 @@ public class CanvasLayoutTests : BaseLayoutTests
     [Test]
     public void CanvasNode_Child_Background()
     {
-        var root = new TreeNode(new CanvasNode("Root") { BackgroundRune = Pixel.Block.QuadrantULeftLRight})
+        var root = new LayoutNode(new CanvasNode("Root") { BackgroundRune = Pixel.Block.QuadrantULeftLRight})
         {
-            (   new CanvasNode { Name="Child", BackgroundRune = Pixel.Block.ShadeLight}, 
+            new LayoutNode(
+                new CanvasNode { Name="Child", BackgroundRune = Pixel.Block.ShadeLight}, 
                 new CanvasLayout.Instructions(
                     Align.Center, 
                     Align.Center,
@@ -69,26 +70,26 @@ public class CanvasLayoutTests : BaseLayoutTests
     [Test]
     public void CanvasNode_Child_SizeRequested()
     {
-        var root = new TreeNode(new CanvasNode("Root") { BackgroundRune = Pixel.Block.Solid})
+        var root = new LayoutNode(new CanvasNode("Root") { BackgroundRune = Pixel.Block.Solid})
         {
-            new TreeNode(
-                new CanvasNode { Name="Child", BackgroundRune = Pixel.Block.ShadeDark, SizeRequested = new SizeNumber(30, 10)}, 
-                new CanvasLayout.Instructions(Align.Center, Align.Center)
+            new LayoutNode(
+                new CanvasNode { Name="Child", BackgroundRune = Pixel.Block.ShadeDark}, 
+                new CanvasLayout.Instructions(Align.Center, Align.Center, sizeRequested:new(30,10))
             )
             {
-                new TreeNode
+                new LayoutNode
                 (
-                    new CanvasNode { Name="Sub-Child", BackgroundRune = Pixel.Block.ShadeMedium, SizeRequested = new SizeNumber(20, 8)},
-                    new CanvasLayout.Instructions(Align.Center, Align.Center)
+                    new CanvasNode { Name="Sub-Child", BackgroundRune = Pixel.Block.ShadeMedium},
+                    new CanvasLayout.Instructions(Align.Center, Align.Center, new(20,8))
                 )
                 {
-                    new TreeNode
+                    new LayoutNode
                     (   
-                        new CanvasNode { Name="Sub-Sub-Child", BackgroundRune = Pixel.Block.ShadeLight, SizeRequested = new SizeNumber(10, 6)},
-                        new CanvasLayout.Instructions(Align.Center, Align.Center)
+                        new CanvasNode { Name="Sub-Sub-Child", BackgroundRune = Pixel.Block.ShadeLight},
+                        new CanvasLayout.Instructions(Align.Center, Align.Center, new(10,6))
                     )
                     {
-                        new TreeNode(
+                        new LayoutNode(
                             new CanvasNode{ Name = "Center", BackgroundRune = (Rune)' '},
                             new CanvasLayout.Instructions(Align.Center, Align.Center, new SizeNumber(4, 4))
                         )
@@ -119,26 +120,26 @@ public class CanvasLayoutTests : BaseLayoutTests
         [Test]
     public void CanvasNode_Child_Margin()
     {
-        var root = new TreeNode(new CanvasNode("Root") { BackgroundRune = Pixel.Block.Solid})
+        var root = new LayoutNode(new CanvasNode("Root") { BackgroundRune = Pixel.Block.Solid})
         {
-            new TreeNode(
+            new LayoutNode(
                 new CanvasNode { Name="Child", BackgroundRune = Pixel.Block.ShadeDark}, 
                 new CanvasLayout.Instructions(margin:SidesInt.One)
             )
             {
-                new TreeNode
+                new LayoutNode
                 (
                     new CanvasNode { Name="Sub-Child", BackgroundRune = Pixel.Block.ShadeMedium},
                     new CanvasLayout.Instructions(margin:SidesInt.One)
                 )
                 {
-                    new TreeNode
+                    new LayoutNode
                     (   
                         new CanvasNode { Name="Sub-Sub-Child", BackgroundRune = Pixel.Block.ShadeLight},
                         new CanvasLayout.Instructions(margin:SidesInt.One)
                     )
                     {
-                        new TreeNode(
+                        new LayoutNode(
                             new CanvasNode{ Name = "Center", BackgroundRune = (Rune)' '},
                             new CanvasLayout.Instructions(margin:SidesInt.One)
                         )

@@ -7,4 +7,8 @@ namespace No8.Areaz.Layout;
 public record XY(int X, int Y)
 {
     public static readonly XY Zero = new(0, 0);
+    public override string ToString()
+    {
+        return $"({X},{Y})";
+    }
 }

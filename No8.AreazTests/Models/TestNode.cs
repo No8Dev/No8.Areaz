@@ -9,7 +9,7 @@ namespace No8.AreazTests.Models;
 public class TestNode : INode
 {
     public string Name { get; set; } = string.Empty;
-    public SizeNumber? SizeRequested { get; set; }
+    //public SizeNumber? SizeRequested { get; set; }
     
     public TestNode() { }
     public TestNode(string name) { Name = name; }
@@ -30,7 +30,19 @@ public class TestNode : INode
     {
         if (bounds.Size.IsEmpty) return;
         if (bounds.Height <= 1 || bounds.Width <= 1)
+        {
             canvas.DrawLine(bounds, lineSet);
+            if (bounds.Height <= 1)
+            {
+                canvas[bounds.Y, bounds.X] = '├';
+                canvas[bounds.Y, bounds.Right - 1] = '┤';
+            }
+            else if (bounds.Width <= 1)
+            {
+                canvas[bounds.Y, bounds.X] = '┬';
+                canvas[bounds.Bottom - 1, bounds.X] = '┴';
+            }
+        }
         else 
             canvas.DrawRectangle(bounds, lineSet);
     }

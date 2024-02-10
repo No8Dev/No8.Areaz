@@ -84,9 +84,9 @@ public record SidesNumber(
     {
         if (Start == End  && Top == Bottom && Start == Top)
             return $"(all:{Start})";
-        return $"({Start},{Top},{End},{Bottom})";
+        return $"(←:{Start} ↑:{Top} →:{End} ↓:{Bottom})";
     }
-
+    
     public static implicit operator SidesNumber(int value) => Create(value);
     public static implicit operator SidesNumber(Number value) => Create(value);
 }

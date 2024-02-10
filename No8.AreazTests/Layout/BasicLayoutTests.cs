@@ -9,7 +9,7 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Create_Stretch()
     {
-        var root = Tree.Create(new TestNode { Name = "Root" });
+        var root = new LayoutNode(new TestNode { Name = "Root" });
         
         Draw(root);
         Assert.AreEqual("""
@@ -33,7 +33,7 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Margin()
     {
-        var root = Tree.Create(new TestNode { Name = "Root" }, new CanvasLayout.Instructions(margin: SidesInt.One));
+        var root = new LayoutNode(new TestNode { Name = "Root" }, new CanvasLayout.Instructions(margin: SidesInt.One));
         
         Draw(root);
         Assert.AreEqual("""
@@ -56,8 +56,8 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_CreateWithSize_AlignStart()
     {
-        var root = Tree.Create(
-            new TestNode { Name = "Root", SizeRequested = new(10,10) });
+        var root = new LayoutNode(
+            new TestNode { Name = "Root" }, new CanvasLayout.Instructions(sizeRequested:new(10,10)));
         
         Draw(root);
         Assert.AreEqual("""
@@ -79,8 +79,8 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_CreateWithInstructions_AlignEnd()
     {
-        var root = Tree.Create(
-            new TestNode { Name = "Root", SizeRequested = new(10,10) }, new CanvasLayout.Instructions(alignHorz:Align.End, alignVert:Align.End));
+        var root = new LayoutNode(
+            new TestNode { Name = "Root" }, new CanvasLayout.Instructions(alignHorz:Align.End, alignVert:Align.End, sizeRequested:new(10,10)));
         
         Draw(root);
         Assert.AreEqual("""
@@ -104,10 +104,10 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Child_HorzCenter()
     {
-        var root = new TreeNode(new TestNode("Root"))
+        var root = new LayoutNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", SizeRequested = new (10, 5) }, 
-                new CanvasLayout.Instructions(alignHorz: Align.Center))
+            new LayoutNode(   new TestNode { Name="Child" }, 
+                new CanvasLayout.Instructions(alignHorz: Align.Center, sizeRequested:new(10,5)))
         };
         
         Draw(root);
@@ -132,10 +132,11 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Child_Center()
     {
-        var root = new TreeNode(new TestNode("Root"))
+        var root = new LayoutNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
-                new CanvasLayout.Instructions(Align.Center, Align.Center))
+            new LayoutNode(
+                new TestNode { Name="Child" }, 
+                new CanvasLayout.Instructions(Align.Center, Align.Center, sizeRequested:new(10,6)))
         };
         
         Draw(root);
@@ -160,10 +161,12 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Child_End()
     {
-        var root = new TreeNode(new TestNode("Root"))
+        var root = new LayoutNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
-                new CanvasLayout.Instructions(Align.End, Align.End))
+            new LayoutNode(
+                new TestNode { Name="Child" }, 
+                new CanvasLayout.Instructions(Align.End, Align.End, sizeRequested:new(10,6))
+                )
         };
         
         Draw(root);
@@ -188,10 +191,12 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Child_HorzStretch()
     {
-        var root = new TreeNode(new TestNode("Root"))
+        var root = new LayoutNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
-                new CanvasLayout.Instructions(Align.Stretch, Align.Center))
+            new LayoutNode(
+                new TestNode { Name="Child" }, 
+                new CanvasLayout.Instructions(Align.Stretch, Align.Center, sizeRequested:new(10,6))
+                )
         };
         
         Draw(root);
@@ -216,10 +221,11 @@ public class BasicLayoutTests : BaseLayoutTests
     [Test]
     public void TestLayout_Child_VertStretch()
     {
-        var root = new TreeNode(new TestNode("Root"))
+        var root = new LayoutNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
-                new CanvasLayout.Instructions(Align.Center, Align.Stretch))
+            new LayoutNode(
+                new TestNode { Name="Child" }, 
+                new CanvasLayout.Instructions(Align.Center, Align.Stretch, sizeRequested:new(10,6)))
         };
         
         Draw(root);

@@ -23,7 +23,7 @@ public class StackLayout : ILayoutManager
     public static readonly StackLayout Default = new();
     private static readonly Instructions DefaultInstructions = new ();
     
-    public void MeasureIn(TreeNode container, IReadOnlyList<TreeNode> children)
+    public void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
         var stack = container.Node as Stack ?? throw new Exception($"Unexpected container {container}");
         if (container.MeasuredSize is null) throw new Exception($"Stack has no measured size {stack}");
@@ -37,7 +37,7 @@ public class StackLayout : ILayoutManager
         {
             child.FixedSize = false;
             var childInstructions = child.Instructions as Instructions ?? DefaultInstructions;
-            var sizeRequested = child.Node.SizeRequested ?? childInstructions.SizeRequested;
+            var sizeRequested = childInstructions.SizeRequested;
             var childMargin = child.Instructions?.Margin ?? SidesInt.Zero;
            
             if (sizeRequested is not null)
@@ -57,7 +57,7 @@ public class StackLayout : ILayoutManager
                     width = requestedWidth.Value;
                     height = sizeRequested.Value.Height.IsPoints ? sizeRequested.Value.Height.Value : 0f; 
                     
-                    var (_, actualHeight, _) = Tree.ResolveDimension(
+                    var (_, actualHeight, _) = LayoutTree.ResolveDimension(
                         availableSize.Height - childMargin.Top - childMargin.Bottom,
                         height, 0f, childInstructions.CrossAlign);
                     
@@ -76,7 +76,7 @@ public class StackLayout : ILayoutManager
                     width = sizeRequested.Value.Width.IsPoints ? sizeRequested.Value.Width : 0f;
                     height = requestedHeight.Value;
                     
-                    var (_, actualWidth, _) = Tree.ResolveDimension(
+                    var (_, actualWidth, _) = LayoutTree.ResolveDimension(
                         remainingSize.Width - childMargin.Start - childMargin.End,
                         width, 0f, childInstructions.CrossAlign);
                     
@@ -95,12 +95,12 @@ public class StackLayout : ILayoutManager
         foreach (var child in children)
         {
             var childInstructions = child.Instructions as Instructions ?? DefaultInstructions;
-            var sizeRequested = child.Node.SizeRequested ?? childInstructions.SizeRequested;
+            var sizeRequested = childInstructions.SizeRequested;
             var childMargin = child.Instructions?.Margin ?? SidesInt.Zero;
             
             if (stack.StackDirection == Direction.Horizontal)
             {
-                var (y, _, _) = Tree.ResolveDimension(
+                var (y, _, _) = LayoutTree.ResolveDimension(
                     availableSize.Height - childMargin.Top - childMargin.Bottom,
                     child.MeasuredSize!.Value.Height, 0f, childInstructions.CrossAlign);
 
@@ -113,7 +113,7 @@ public class StackLayout : ILayoutManager
                         remainingSize = remainingSize with { Width = remainingSize.Width - actualWidth - childMargin.Start - childMargin.End };
                         var height = sizeRequested.Value.Height.IsPoints ? sizeRequested.Value.Height.Value : 0f;
                         
-                        var (_, actualHeight, _) = Tree.ResolveDimension(availableSize.Height - childMargin.Top - childMargin.Bottom, height, 0f, childInstructions.CrossAlign);
+                        var (_, actualHeight, _) = LayoutTree.ResolveDimension(availableSize.Height - childMargin.Top - childMargin.Bottom, height, 0f, childInstructions.CrossAlign);
 
                         child.MeasuredSize = new SizeF(actualWidth, actualHeight);
                     }
@@ -129,7 +129,7 @@ public class StackLayout : ILayoutManager
             // Vertical
             else
             {
-                var (x, _, _) = Tree.ResolveDimension(
+                var (x, _, _) = LayoutTree.ResolveDimension(
                     availableSize.Width - childMargin.Start - childMargin.End, 
                     child.MeasuredSize!.Value.Width, 0f, childInstructions.CrossAlign);
 
@@ -142,7 +142,7 @@ public class StackLayout : ILayoutManager
                         remainingSize = remainingSize with { Height = remainingSize.Height - actualHeight - childMargin.Top - childMargin.Bottom };
                         var width = sizeRequested.Value.Width.IsPoints ? sizeRequested.Value.Width.Value : 0f;
                         
-                        var (_, actualWidth, _) = Tree.ResolveDimension(
+                        var (_, actualWidth, _) = LayoutTree.ResolveDimension(
                             availableSize.Width - childMargin.Start - childMargin.End, 
                             width, 0f, childInstructions.CrossAlign);
 
@@ -161,7 +161,7 @@ public class StackLayout : ILayoutManager
         
     }
 
-    public void MeasureOut(TreeNode container, IReadOnlyList<TreeNode> children)
+    public void MeasureOut(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
     }
 
@@ -186,5 +186,16 @@ public class StackLayout : ILayoutManager
         public SizeNumber? SizeRequested { get; init; }
         
         public SidesInt? Margin { get; init; }
+
+        public override string ToString() => BuildString(new StringBuilder()).ToString();
+
+        protected virtual StringBuilder BuildString(StringBuilder? sb = null)
+        {
+            sb ??= new();
+            sb.Append($"{GetType().FullName} Cross:{CrossAlign}");
+            if (SizeRequested is not null) sb.Append($" Size{SizeRequested.Value}");
+            if (Margin is not null) sb.Append($" Margin{Margin}");
+            return sb;
+        }
     }
 }

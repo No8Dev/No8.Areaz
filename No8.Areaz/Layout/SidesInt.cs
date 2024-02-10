@@ -1,3 +1,5 @@
+using No8.Areaz.Painting;
+
 namespace No8.Areaz.Layout;
 
 /// <summary>
@@ -48,4 +50,12 @@ public record SidesInt(int Start, int Top, int End, int Bottom)
         end = End;
         bottom = Bottom;
     }
+
+    public override string ToString()
+    {
+        if (Start == End  && Top == Bottom && Start == Top)
+            return $"(:{Start})";
+        return $"(←:{Start} ↑:{Top} →:{End} ↓:{Bottom})";
+    }
+
 }

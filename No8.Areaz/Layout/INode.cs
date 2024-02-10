@@ -16,10 +16,10 @@ namespace No8.Areaz.Layout
         /// </summary>
         ILayoutManager? LayoutManager();
 
-        /// <summary>
-        ///     Optional size requested for the node
-        /// </summary>
-        SizeNumber? SizeRequested { get; set; }
+        // /// <summary>
+        // ///     Optional size requested for the node
+        // /// </summary>
+        // SizeNumber? SizeRequested { get; set; }
     
         /// <summary>
         ///     Node can paint to the canvas before any child nodes 

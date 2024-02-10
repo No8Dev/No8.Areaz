@@ -10,11 +10,11 @@ public abstract class Node : INode
     protected Node(string? name = null, SizeNumber? sizeRequested = null)
     {
         Name = name ?? string.Empty;
-        SizeRequested = sizeRequested;
+        //SizeRequested = sizeRequested;
     }
 
     public abstract ILayoutManager? LayoutManager();
-    public SizeNumber? SizeRequested { get; set; }
+    //public SizeNumber? SizeRequested { get; set; }
 
     public virtual void PaintIn(Canvas canvas, Rectangle rect) { }
     public virtual void PaintOut(Canvas canvas, Rectangle rect) { }
@@ -25,8 +25,8 @@ public abstract class Node : INode
     {
         sb ??= new();
         sb.Append($"{GetType().Name}");
-        if (!string.IsNullOrEmpty(Name)) sb.Append($" [{Name}] ");
-        if (SizeRequested is not null) sb.Append($" Size{SizeRequested.Value}");
+        if (!string.IsNullOrEmpty(Name)) sb.Append($" [{Name}]");
+        //if (SizeRequested is not null) sb.Append($" Size{SizeRequested.Value}");
         return sb;
     }
 }

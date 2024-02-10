@@ -23,7 +23,7 @@ public class CanvasLayout : ILayoutManager
     public static readonly CanvasLayout Default = new();
     internal static readonly Instructions DefaultInstructions = new ();
 
-    public void MeasureIn(TreeNode container, IReadOnlyList<TreeNode> children)
+    public void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
         if (container.MeasuredSize is null) throw new Exception($"Canvas has no measured size {container.Node}");        
         
@@ -31,16 +31,16 @@ public class CanvasLayout : ILayoutManager
             MeasureChild(container, child);
     }
 
-    public void MeasureOut(TreeNode container, IReadOnlyList<TreeNode> children)
+    public void MeasureOut(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
     }
     
-    public void MeasureChild(TreeNode container, TreeNode child)
+    public void MeasureChild(LayoutNode container, LayoutNode child)
     {
         var instructions = child.Instructions as Instructions ?? DefaultInstructions;
-        var sizeRequested = child.Node.SizeRequested ?? instructions.SizeRequested;
+        var sizeRequested = instructions.SizeRequested;
         var availableSize = container.MeasuredSize!.Value;
-        var remainingSize = Tree.Reduce(availableSize, instructions.Margin ?? SidesInt.Zero);
+        var remainingSize = LayoutTree.Reduce(availableSize, instructions.Margin ?? SidesInt.Zero);
         
         SizeF measured;
         
@@ -55,8 +55,8 @@ public class CanvasLayout : ILayoutManager
         else
             measured = remainingSize;
 
-        var (x, width, _) = Tree.ResolveDimension(remainingSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
-        var (y, height, _) = Tree.ResolveDimension(remainingSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
+        var (x, width, _) = LayoutTree.ResolveDimension(remainingSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
+        var (y, height, _) = LayoutTree.ResolveDimension(remainingSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
 
         child.MeasuredSize = new(width, height);
         child.Bounds = new((int)x, (int)y, (int)width, (int)height);
@@ -90,5 +90,16 @@ public class CanvasLayout : ILayoutManager
         public SizeNumber? SizeRequested { get; init; }
         
         public SidesInt? Margin { get; init; }
+        public override string ToString() => BuildString(new StringBuilder()).ToString();
+
+        protected virtual StringBuilder BuildString(StringBuilder? sb = null)
+        {
+            sb ??= new();
+            sb.Append($"{GetType().FullName} (↔:{AlignHorz} ↕:{AlignVert}) XY:{XY}");
+            if (SizeRequested is not null) sb.Append($" Size{SizeRequested.Value}");
+            if (Margin is not null) sb.Append($" Margin{Margin}");
+            return sb;
+        }
+
     }
 }
