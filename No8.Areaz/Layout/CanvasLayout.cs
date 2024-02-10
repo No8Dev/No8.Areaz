@@ -1,51 +1,65 @@
 using System.Drawing;
+using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
+
+public class CanvasNode : Node
+{
+    public CanvasNode(string? name = null, SizeNumber? size = null) : base(name, size) 
+    { }
+
+    public Rune BackgroundRune { get; set; } = Pixel.Block.Solid;
+
+    public override ILayoutManager? LayoutManager() => CanvasLayout.Default;
+
+    public override void PaintIn(Canvas canvas, Rectangle rect)
+    {
+        canvas.FillRectangle(rect, BackgroundRune);
+    }
+}
 
 public class CanvasLayout : ILayoutManager
 {
     public static readonly CanvasLayout Default = new();
     internal static readonly Instructions DefaultInstructions = new ();
 
-    public void Measure(TreeNode container, IReadOnlyList<TreeNode> children, SizeF availableSize)
+    public void MeasureIn(TreeNode container, IReadOnlyList<TreeNode> children)
     {
-        float maxX = 0f, maxY = 0f;
-
-        if (container.MeasuredSize is not null)
-        {
-            maxX = container.MeasuredSize.Value.Width;
-            maxY = container.MeasuredSize.Value.Height;
-        }
-
+        if (container.MeasuredSize is null) throw new Exception($"Canvas has no measured size {container.Node}");        
+        
         foreach (var child in children)
-        {
-            if (child.MeasuredSize is null) continue;
-            
-            Measure(child, availableSize);
-            
-            maxX = MathF.Max(maxX, child.Bounds.Right - 1);
-            maxY = MathF.Max(maxY, child.Bounds.Bottom - 1);
-        }
-
-        container.MeasuredSize = new SizeF(maxX, maxY);
-        Measure(container, availableSize);
-        if (container.MeasuredSize.Value.IsEmpty)
-            container.MeasuredSize = container.Bounds.Size;
+            MeasureChild(container, child);
     }
 
-    public void Measure(TreeNode node, SizeF availableSize)
+    public void MeasureOut(TreeNode container, IReadOnlyList<TreeNode> children)
     {
-        if (node.MeasuredSize is null)
-            return;
-            
-        var measured = node.MeasuredSize.Value;
+    }
+    
+    public void MeasureChild(TreeNode container, TreeNode child)
+    {
+        var instructions = child.Instructions as Instructions ?? DefaultInstructions;
+        var sizeRequested = child.Node.SizeRequested ?? instructions.SizeRequested;
+        var availableSize = container.MeasuredSize!.Value;
+        var remainingSize = Tree.Reduce(availableSize, instructions.Margin ?? SidesInt.Zero);
+        
+        SizeF measured;
+        
+        if (sizeRequested is not null)
+        {
+            var measuredWidth = sizeRequested.Value.Width.Resolve(remainingSize.Width);
+            var measuredHeight = sizeRequested.Value.Height.Resolve(remainingSize.Height);
+            measured = new(measuredWidth, measuredHeight);
+        }
+        else if (child.MeasuredSize is not null)
+            measured = child.MeasuredSize.Value;
+        else
+            measured = remainingSize;
 
-        var instructions = node.Instructions as Instructions ?? DefaultInstructions;
+        var (x, width, _) = Tree.ResolveDimension(remainingSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
+        var (y, height, _) = Tree.ResolveDimension(remainingSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
 
-        var (x, width, _) = Tree.ResolveDimension(availableSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
-        var (y, height, _) = Tree.ResolveDimension(availableSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
-
-        node.Bounds = new((int)x, (int)y, (int)width, (int)height);
+        child.MeasuredSize = new(width, height);
+        child.Bounds = new((int)x, (int)y, (int)width, (int)height);
     }
 
     /// <summary>
@@ -53,18 +67,28 @@ public class CanvasLayout : ILayoutManager
     /// </summary>
     public class Instructions : ILayoutManager.ILayoutInstructions
     {
-        public Instructions(Align alignHorz = Align.Start, Align alignVert = Align.Start, XY? xy = null)
+        public Instructions(
+            Align alignHorz = Align.Start, 
+            Align alignVert = Align.Start,
+            SizeNumber? sizeRequested = null,
+            SidesInt? margin = null,
+            XY? xy = null)
         {
             AlignHorz = alignHorz;
             AlignVert = alignVert;
+            SizeRequested = sizeRequested;
+            Margin = margin;
             XY = xy ?? XY.Zero;
         }
         
-        public Align AlignHorz { get; }
-        public Align AlignVert { get; }
+        public Align AlignHorz { get; set; }
+        public Align AlignVert { get; set; }
         
         // ReSharper disable once InconsistentNaming
-        public XY XY { get; }
+        public XY XY { get; set; }
 
+        public SizeNumber? SizeRequested { get; init; }
+        
+        public SidesInt? Margin { get; init; }
     }
 }

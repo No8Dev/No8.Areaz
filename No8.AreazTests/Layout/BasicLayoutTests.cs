@@ -6,13 +6,10 @@ namespace No8.AreazTests.Layout;
 
 public class BasicLayoutTests : BaseLayoutTests
 {
-    private Size DefaultSize = new(32, 16);
-    
     [Test]
-    public void TestLayout1()
+    public void TestLayout_Create_Stretch()
     {
-        var root = new TreeNode(
-            new TestNode("Root"));
+        var root = Tree.Create(new TestNode { Name = "Root" });
         
         Draw(root);
         Assert.AreEqual("""
@@ -32,13 +29,35 @@ public class BasicLayoutTests : BaseLayoutTests
             Canvas.ToString()
             );
     }
-    
+
     [Test]
-    public void TestLayout2()
+    public void TestLayout_Margin()
     {
-        var root = new TreeNode(
-            new TestNode { Name = "Root", Size = new(10,10) },
-            new CanvasLayout.Instructions());
+        var root = Tree.Create(new TestNode { Name = "Root" }, new CanvasLayout.Instructions(margin: SidesInt.One));
+        
+        Draw(root);
+        Assert.AreEqual("""
+
+                 ┌[Root]──────────────────────────────┐
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
+                 └────────────────────────────────────┘
+                """,
+            Canvas.ToString()
+        );
+    }
+
+    [Test]
+    public void TestLayout_CreateWithSize_AlignStart()
+    {
+        var root = Tree.Create(
+            new TestNode { Name = "Root", SizeRequested = new(10,10) });
         
         Draw(root);
         Assert.AreEqual("""
@@ -55,6 +74,31 @@ public class BasicLayoutTests : BaseLayoutTests
                 """,
             Canvas.ToString()
         );
+    }
+    
+    [Test]
+    public void TestLayout_CreateWithInstructions_AlignEnd()
+    {
+        var root = Tree.Create(
+            new TestNode { Name = "Root", SizeRequested = new(10,10) }, new CanvasLayout.Instructions(alignHorz:Align.End, alignVert:Align.End));
+        
+        Draw(root);
+        Assert.AreEqual("""
+
+
+                                              ┌[Root]──┐
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              │░░░░░░░░│
+                                              └────────┘
+                """,
+            Canvas.ToString()
+        );
     }    
     
     [Test]
@@ -62,7 +106,7 @@ public class BasicLayoutTests : BaseLayoutTests
     {
         var root = new TreeNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", Size = new (10, 5) }, 
+            (   new TestNode { Name="Child", SizeRequested = new (10, 5) }, 
                 new CanvasLayout.Instructions(alignHorz: Align.Center))
         };
         
@@ -90,7 +134,7 @@ public class BasicLayoutTests : BaseLayoutTests
     {
         var root = new TreeNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", Size = new (10, 6) }, 
+            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
                 new CanvasLayout.Instructions(Align.Center, Align.Center))
         };
         
@@ -118,7 +162,7 @@ public class BasicLayoutTests : BaseLayoutTests
     {
         var root = new TreeNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", Size = new (10, 6) }, 
+            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
                 new CanvasLayout.Instructions(Align.End, Align.End))
         };
         
@@ -146,7 +190,7 @@ public class BasicLayoutTests : BaseLayoutTests
     {
         var root = new TreeNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", Size = new (10, 6) }, 
+            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
                 new CanvasLayout.Instructions(Align.Stretch, Align.Center))
         };
         
@@ -174,7 +218,7 @@ public class BasicLayoutTests : BaseLayoutTests
     {
         var root = new TreeNode(new TestNode("Root"))
         {
-            (   new TestNode { Name="Child", Size = new (10, 6) }, 
+            (   new TestNode { Name="Child", SizeRequested = new (10, 6) }, 
                 new CanvasLayout.Instructions(Align.Center, Align.Stretch))
         };
         

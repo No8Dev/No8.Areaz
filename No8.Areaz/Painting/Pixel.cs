@@ -4,23 +4,45 @@ public static class Pixel
 {
     public static class Block
     {
-        public static readonly Rune LightShade  = (Rune)'░';
-        public static readonly Rune MediumShade = (Rune)'▒';
-        public static readonly Rune DarkShade   = (Rune)'▓';
+        public static readonly Rune ShadeLight  = (Rune)'░';
+        public static readonly Rune ShadeMedium = (Rune)'▒';
+        public static readonly Rune ShadeDark   = (Rune)'▓';
         public static readonly Rune Solid       = (Rune)'█';
 
         public static readonly Rune QuadrantUpperLeft       = (Rune)'▘';
         public static readonly Rune QuadrantUpperRight      = (Rune)'▝';
         public static readonly Rune QuadrantLowerLeft       = (Rune)'▖';
         public static readonly Rune QuadrantLowerRight      = (Rune)'▗';
+        public static readonly Rune QuadrantULeftLRight     = (Rune)'▚';
+        public static readonly Rune QuadrantURightLLeft     = (Rune)'▞';
         public static readonly Rune QuadrantPointUpperLeft  = (Rune)'▛';
         public static readonly Rune QuadrantPointUpperRight = (Rune)'▜';
         public static readonly Rune QuadrantPointLowerLeft  = (Rune)'▙';
+        public static readonly Rune QuadrantPointLowerRight = (Rune)'▟';
         public static readonly Rune QuadrantRight           = (Rune)'▐';
         public static readonly Rune QuadrantLeft            = (Rune)'▌';
         public static readonly Rune QuadrantUp              = (Rune)'▀';
         public static readonly Rune QuadrantDown            = (Rune)'▄';
 
+        public static readonly Rune Lower1 = (Rune)'▁';
+        public static readonly Rune Lower2 = (Rune)'▂';
+        public static readonly Rune Lower3 = (Rune)'▃';
+        public static readonly Rune Lower4 = (Rune)'▄';
+        public static readonly Rune Lower5 = (Rune)'▅';
+        public static readonly Rune Lower6 = (Rune)'▆';
+        public static readonly Rune Lower7 = (Rune)'▇';
+        public static readonly Rune Lower8 = (Rune)'█';
+        public static readonly Rune Upper1 = (Rune)'▔';
+
+        public static readonly Rune Left1 = (Rune)'▏';
+        public static readonly Rune Left2 = (Rune)'▎';
+        public static readonly Rune Left3 = (Rune)'▍';
+        public static readonly Rune Left4 = (Rune)'▌';
+        public static readonly Rune Left5 = (Rune)'▋';
+        public static readonly Rune Left6 = (Rune)'▊';
+        public static readonly Rune Left7 = (Rune)'▉';
+        public static readonly Rune Left8 = (Rune)'█';
+        public static readonly Rune Right1= (Rune)'▕';
     }
 
     public static class Shapes
@@ -361,4 +383,26 @@ public static class Pixel
     internal static readonly LineDrawSet NoLine     = new("                ");
 
     //**************************************************
+    
+    public static class Box
+    {
+        public static readonly Rune LightHorz = (Rune)'─';
+        public static readonly Rune HeavyHorz = (Rune)'━';
+        public static readonly Rune DoubleHorz = (Rune)'═';
+        public static readonly Rune LightVert = (Rune)'│';
+        public static readonly Rune HeavyVert = (Rune)'┃';
+        public static readonly Rune DoubleVert = (Rune)'║';
+        
+        public static readonly Rune LightMeatballs = (Rune)'┄';
+        public static readonly Rune HeavyMeatballs = (Rune)'┅';
+        public static readonly Rune LightKebab = (Rune)'┆';
+        public static readonly Rune HeavyKebab = (Rune)'┇';
+        public static readonly Rune Bento      = (Rune)'#';
+
+        public static readonly Rune BackSlash = (Rune)'╱';
+        public static readonly Rune ForeSlash = (Rune)'╲';
+        public static readonly Rune Cross     = (Rune)'╳';
+
+    }
+
 }

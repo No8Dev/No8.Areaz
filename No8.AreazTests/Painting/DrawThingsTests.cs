@@ -78,7 +78,7 @@ public class DrawThingsTests
     public void DrawCircle()
     {
         _canvas.CircleCompensateRatio = 1.0f;
-        _canvas.DrawCircle(19, 9, 7, Pixel.Block.DarkShade);
+        _canvas.DrawCircle(19, 9, 7, Pixel.Block.ShadeDark);
 
         var str = _canvas.ToString();
         var box = @"
@@ -105,9 +105,9 @@ public class DrawThingsTests
     public void DrawFillCircle()
     {
         _canvas.CircleCompensateRatio = 1.0f;
-        _canvas.FillCircle(19, 9, 7, Pixel.Block.LightShade);
-        _canvas.FillCircle(19, 9, 6, Pixel.Block.MediumShade);
-        _canvas.FillCircle(19, 9, 4, Pixel.Block.DarkShade);
+        _canvas.FillCircle(19, 9, 7, Pixel.Block.ShadeLight);
+        _canvas.FillCircle(19, 9, 6, Pixel.Block.ShadeMedium);
+        _canvas.FillCircle(19, 9, 4, Pixel.Block.ShadeDark);
 
         var str = _canvas.ToString();
         var box = @"
@@ -156,8 +156,8 @@ public class DrawThingsTests
         _canvas.DrawRectangle(0, 0, 9, 9, LineSet.Rounded, Color.GreenYellow);
         _canvas.FillTriangle(1, 4, 7, 4, 4, 7, Pixel.Shapes.TriangleSolidUp, Color.OrangeRed);
         _canvas.DrawRectangle(1, 1, 8, 3, LineSet.DoubleOver, Color.Purple);
-        _canvas.SetGlyph(3, 2, new Glyph(Pixel.Block.DarkShade, Color.DeepSkyBlue));
-        _canvas.SetGlyph(6, 2, new Glyph(Pixel.Block.DarkShade, Color.DeepSkyBlue));
+        _canvas.SetGlyph(3, 2, new Glyph(Pixel.Block.ShadeDark, Color.DeepSkyBlue));
+        _canvas.SetGlyph(6, 2, new Glyph(Pixel.Block.ShadeDark, Color.DeepSkyBlue));
 
         var sprite = _canvas.ExportSprite(0, 0, 10, 10);
 

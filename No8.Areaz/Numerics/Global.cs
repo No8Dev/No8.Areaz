@@ -14,7 +14,7 @@ public static class Global
     public static Number Percent(this float value) => new (value, Number.UoM.Percent);
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Number Percent(this int value) => new (value, Number.UoM.Percent);
+    public static Number Percent(this int value) => new (value / 100.0f, Number.UoM.Percent);
     
     public static bool IsOneOf<T>(this T value, IEnumerable<T?> values)
     {

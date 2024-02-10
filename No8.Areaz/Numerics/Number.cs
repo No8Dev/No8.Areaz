@@ -1,6 +1,7 @@
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
+using No8.Areaz.Layout;
 
 namespace No8.Areaz;
 
@@ -10,12 +11,10 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
     public const float Zero = 0f;
     
     public static readonly Number Undefined = new (ValueUndefined, UoM.Undefined);
-    public static readonly Number Auto = new(0f, UoM.Auto);
 
 
     public enum UoM {
         Undefined = 0,      // Default
-        Auto,
         Points,
         Percent,
     }
@@ -28,7 +27,6 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
     public static implicit operator Number(double d) => new((float)d, UoM.Points);
     public static implicit operator float(Number dim) => dim.HasValue() ? dim.Value : ValueUndefined;
 
-    public bool IsAuto => Unit == UoM.Auto;
     public bool IsPoints => Unit == UoM.Points;
     public bool IsPercent => Unit == UoM.Percent;
 
@@ -36,7 +34,6 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
     {
         return Unit switch
         {
-            UoM.Auto => true,
             UoM.Percent => Value.HasValue(),
             UoM.Points => Value.HasValue(),
             _ => false
@@ -131,6 +128,16 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
         };
     }
 
+    internal int ResolveToInt(float parentDim)
+    {
+        return Unit switch
+        {
+            UoM.Points => (int)Value,
+            UoM.Percent => (int)Multiply(parentDim, Value),
+            _ => 0
+        };
+    }
+
     public float OrElse(float other) => HasPointValue() ? Value : other;
     
 
@@ -149,8 +156,6 @@ public record Number(float Value, Number.UoM Unit) : IAdditionOperators<Number,N
     {
         switch (Unit)
         {
-            case UoM.Auto:
-                return "auto";
             case UoM.Points:
                 return $"{Value}";
             case UoM.Percent:

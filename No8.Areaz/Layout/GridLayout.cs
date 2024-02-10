@@ -22,7 +22,12 @@ public class GridLayout : ILayoutManager
         set => _cellColGap = value == 0 ? 0 : 1;
     }
 
-    public void Measure(TreeNode container, IReadOnlyList<TreeNode> children, SizeF availableSize)
+    public void MeasureIn(TreeNode container, IReadOnlyList<TreeNode> children)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void MeasureOut(TreeNode container, IReadOnlyList<TreeNode> children)
     {
         throw new NotImplementedException();
     }

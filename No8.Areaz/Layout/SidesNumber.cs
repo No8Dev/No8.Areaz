@@ -1,27 +1,29 @@
+using System.Drawing;
+
 namespace No8.Areaz.Layout;
 
-public record SidesNumeric(
+public record SidesNumber(
     Number Start, 
     Number Top, 
     Number End, 
     Number Bottom)
 {
-    public static SidesNumeric Zero => new(0 );
-    public static SidesNumeric One => new(1 );
+    public static SidesNumber Zero => new(0 );
+    public static SidesNumber One => new(1 );
 
-    public static SidesNumeric Create(Number value) => new(value);
+    public static SidesNumber Create(Number value) => new(value);
 
     /// <summary>
     /// All sides have the same value
     /// </summary>
-    public SidesNumeric(Number value) : this(value, value, value, value) 
+    public SidesNumber(Number value) : this(value, value, value, value) 
     { }
 
-    public SidesNumeric(Number horizontal, Number vertical) 
+    public SidesNumber(Number horizontal, Number vertical) 
         : this (horizontal, vertical, horizontal, vertical)
     { }
 
-    public SidesNumeric(SidesNumeric other)
+    public SidesNumber(SidesNumber other)
     {
         Start = other.Start;
         Top = other.Top;
@@ -71,7 +73,7 @@ public record SidesNumeric(
             End.Resolve(containerWidth),
             Bottom.Resolve(containerHeight));
     }
-
+    
     public bool IsZero =>
         Start.IsZeroPoints() &&
         Top.IsZeroPoints() &&
@@ -85,6 +87,6 @@ public record SidesNumeric(
         return $"({Start},{Top},{End},{Bottom})";
     }
 
-    public static implicit operator SidesNumeric(int value) => Create(value);
-    public static implicit operator SidesNumeric(Number value) => Create(value);
+    public static implicit operator SidesNumber(int value) => Create(value);
+    public static implicit operator SidesNumber(Number value) => Create(value);
 }

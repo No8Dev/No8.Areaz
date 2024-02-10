@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <Folder Include="CommandLine\" />
-      <Folder Include="Numerics\" />
     </ItemGroup>
 
     <ItemGroup>

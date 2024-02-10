@@ -1,36 +1,34 @@
 using System.Drawing;
 using No8.Areaz.Painting;
 
-namespace No8.Areaz.Layout;
-
-public interface INode
+namespace No8.Areaz.Layout
 {
-    ILayoutManager LayoutManager { get; }
-
-    /// <summary>
-    ///     Measure width and height of node based on available size of parent node 
-    /// </summary>
-    SizeF Measure(SizeF availableSize);
-    
-    void Paint(Canvas canvas, Rectangle rect);
-}
-
-public abstract class Node : INode
-{
-    public string Name { get; set; }
-
-    protected Node(string? name = null) { Name = name ?? string.Empty; }
-
-    public abstract ILayoutManager LayoutManager { get; }
-    public abstract SizeF Measure(SizeF availableSize);
-    public abstract void Paint(Canvas canvas, Rectangle rect);
-
-    public override string ToString() => ToString(new ()).ToString();
-
-    public virtual StringBuilder ToString(StringBuilder sb, bool layout = false)
+    public interface INode
     {
-        sb.Append($"{GetType().Name}");
-        if (!string.IsNullOrEmpty(Name)) sb.Append($" [{Name}] ");
-        return sb;
+        /// <summary>
+        ///     Node identity
+        /// </summary>
+        string Name { get; set; }
+
+        /// <summary>
+        ///     Layout manager to layout child elements
+        ///     Can be null if not child elements
+        /// </summary>
+        ILayoutManager? LayoutManager();
+
+        /// <summary>
+        ///     Optional size requested for the node
+        /// </summary>
+        SizeNumber? SizeRequested { get; set; }
+    
+        /// <summary>
+        ///     Node can paint to the canvas before any child nodes 
+        /// </summary>
+        void PaintIn(Canvas canvas, Rectangle rect);
+    
+        /// <summary>
+        ///     Node can paint to the canvas after all child nodes have painted. 
+        /// </summary>
+        void PaintOut(Canvas canvas, Rectangle rect);
     }
 }

@@ -39,6 +39,8 @@ public record SidesInt(int Start, int Top, int End, int Bottom)
                            End == 0 &&
                            Bottom == 0;
 
+    public bool HasValue => !IsZero;
+
     public void Deconstruct(out int start, out int top, out int end, out int bottom)
     {
         start = Start;
