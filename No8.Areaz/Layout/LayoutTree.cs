@@ -5,18 +5,18 @@ namespace No8.Areaz.Layout;
 
 public static class LayoutTree
 {
-    public static LayoutNode Create(INode node, ILayoutManager.ILayoutInstructions? instructions = null)
+    public static LayoutNode Create(IControl control, ILayoutGuide? guide = null)
     {
-        return new (node, instructions);
+        return new (control, guide);
     }
 
-    private static readonly CanvasLayout.Instructions DefaultRootLayout = CanvasLayout.DefaultInstructions;
+    private static readonly CanvasGuide DefaultRootLayout = CanvasLayout.DefaultGuide;
     
     public static void Layout(LayoutNode root, Size availableSize)
     {
-        var instructions = root.Instructions ?? DefaultRootLayout;
-        var sizeRequested = instructions.SizeRequested;
-        var remainingSize = LayoutTree.Reduce(availableSize, instructions.Margin ?? SidesInt.Zero);
+        var guide = root.Guide ?? DefaultRootLayout;
+        var sizeRequested = guide.Size;
+        var remainingSize = LayoutTree.Reduce(availableSize, guide.Margin ?? SidesInt.Zero);
 
         if (sizeRequested?.Width is not null &&
             sizeRequested?.Height is not null)
@@ -25,10 +25,10 @@ public static class LayoutTree
             var measuredHeight = sizeRequested.Value.Height.Resolve(remainingSize.Height);
             var alignHorz = Align.Start;
             var alignVert = Align.Start;
-            if (instructions is CanvasLayout.Instructions canvasInstructions)
+            if (guide is CanvasGuide canvasGuide)
             {
-                alignHorz = canvasInstructions.AlignHorz;
-                alignVert = canvasInstructions.AlignVert;
+                alignHorz = canvasGuide.AlignHorz;
+                alignVert = canvasGuide.AlignVert;
             }
 
             var (x, width, _) = ResolveDimension(remainingSize.Width, measuredWidth, 0, alignHorz);
@@ -49,7 +49,7 @@ public static class LayoutTree
     internal static void LayoutInternal(LayoutNode layoutNode)
     {
         // Option to measure all the direct children from a top down perspective
-        layoutNode.Node.LayoutManager()?.MeasureIn(layoutNode, layoutNode.Children);
+        layoutNode.Control.LayoutManager()?.MeasureIn(layoutNode, layoutNode.Children);
 
         // Apply same logic to all child nodes
         foreach (var child in layoutNode)
@@ -57,14 +57,14 @@ public static class LayoutTree
 
         // When all child nodes (and childrens children...) are measured, 
         // then option to measure all children from the inside out
-        layoutNode.Node.LayoutManager()?.MeasureOut(layoutNode, layoutNode.Children);
+        layoutNode.Control.LayoutManager()?.MeasureOut(layoutNode, layoutNode.Children);
         if (layoutNode.MeasuredSize is null)
-            throw new Exception($"node was not measured by container:{layoutNode.Node}");
+            throw new Exception($"node was not measured by container:{layoutNode.Control}");
     }
 
     public static void Paint(Canvas canvas, LayoutNode container, Rectangle? containerBounds = null)
     {
-        var margin = container.Instructions?.Margin ?? SidesInt.Zero;
+        var margin = container.Guide?.Margin ?? SidesInt.Zero;
         containerBounds ??= container.Bounds;
         if (margin.HasValue)
             containerBounds = containerBounds.Value with
@@ -73,7 +73,7 @@ public static class LayoutTree
                 Y = containerBounds.Value.Y + margin.Top
             };
             
-        container.Node.PaintIn(canvas, containerBounds.Value);
+        container.Control.PaintIn(canvas, containerBounds.Value);
 
         foreach (var child in container.Children)
         {
@@ -84,7 +84,7 @@ public static class LayoutTree
             Paint(canvas, child, childBounds);
         }
             
-        container.Node.PaintOut(canvas, containerBounds.Value);
+        container.Control.PaintOut(canvas, containerBounds.Value);
     }
 
     // ReSharper disable once UnusedTupleComponentInReturnValue

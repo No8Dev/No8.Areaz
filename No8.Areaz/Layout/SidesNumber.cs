@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace No8.Areaz.Layout;
 
 public record SidesNumber(

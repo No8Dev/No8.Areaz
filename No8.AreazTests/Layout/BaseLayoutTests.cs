@@ -24,7 +24,7 @@ public class BaseLayoutTests
 
         LayoutTree.Paint(Canvas, layoutNode);
 
-        TestContext.WriteLine(layoutNode.BuildInstructionsString());
+        TestContext.WriteLine(layoutNode.BuildGuideString());
         TestContext.WriteLine(Canvas.ToString());
         TestContext.WriteLine();
         TestContext.WriteLine(layoutNode.ToString());

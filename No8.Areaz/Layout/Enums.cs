@@ -16,3 +16,10 @@ public enum Align
     Start, End, Center, Stretch
 }
 
+public enum Direction
+{
+    Unknown,
+    Vertical,
+    Horizontal
+}
+

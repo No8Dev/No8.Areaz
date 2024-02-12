@@ -3,18 +3,17 @@ using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
-public abstract class Node : INode
+public abstract class Control : IControl
 {
     public string Name { get; set; }
 
-    protected Node(string? name = null, SizeNumber? sizeRequested = null)
+    protected Control(string? name = null, SizeNumber? sizeRequested = null)
     {
         Name = name ?? string.Empty;
-        //SizeRequested = sizeRequested;
     }
 
     public abstract ILayoutManager? LayoutManager();
-    //public SizeNumber? SizeRequested { get; set; }
+    public abstract bool ValidGuide(ILayoutGuide? guide);
 
     public virtual void PaintIn(Canvas canvas, Rectangle rect) { }
     public virtual void PaintOut(Canvas canvas, Rectangle rect) { }

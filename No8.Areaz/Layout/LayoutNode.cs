@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Drawing;
-using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
@@ -8,8 +7,9 @@ public class LayoutNode : IEnumerable<LayoutNode>
 {
     private readonly List<LayoutNode> _children = new();
     
-    public INode Node { get; }
-    public ILayoutManager.ILayoutInstructions? Instructions { get; set; }
+    public string Name { get; set; }
+    public IControl Control { get; }
+    public ILayoutGuide? Guide { get; set; }
     
     /// <summary>
     ///     The size that the node thinks it should be
@@ -25,10 +25,20 @@ public class LayoutNode : IEnumerable<LayoutNode>
     
     public bool IsLeaf() => _children.IsEmpty();
 
-    public LayoutNode(INode node, ILayoutManager.ILayoutInstructions? instructions = null)
+    public LayoutNode(IControl control, ILayoutGuide? guide = null)
     {
-        Node = node;
-        Instructions = instructions;
+        Control = control;
+        Guide = guide;
+    }
+
+    public LayoutNode(string name, IControl control, ILayoutGuide? guide = null)
+    {
+        Name = name;
+        Control = control;
+        Guide = guide;
+
+        if (string.IsNullOrEmpty(Control.Name))
+            Control.Name = Name;
     }
 
     public IEnumerator<LayoutNode> GetEnumerator() => _children.GetEnumerator();
@@ -37,17 +47,20 @@ public class LayoutNode : IEnumerable<LayoutNode>
 
     public LayoutNode Add(LayoutNode layoutNode)
     {
+        if (!Control.ValidGuide(layoutNode.Guide))
+            throw new Exception($"{layoutNode.Control.GetType()} does not support a Guide of type {layoutNode.Guide?.GetType()}.");
+        
         _children.Add(layoutNode);
         return this;
     }
-    public LayoutNode Add(INode node, ILayoutManager.ILayoutInstructions? instructions = null)
+    public LayoutNode Add(IControl control, ILayoutGuide? guide = null)
     {
-        return Add(new LayoutNode(node, instructions));
+        return Add(new LayoutNode(control, guide));
     }
 
-    public LayoutNode Add(out LayoutNode layoutNode, INode node, ILayoutManager.ILayoutInstructions? instructions = null)
+    public LayoutNode Add(out LayoutNode layoutNode, IControl control, ILayoutGuide? guide = null)
     {
-        layoutNode = new(node, instructions);
+        layoutNode = new(control, guide);
         Add(layoutNode);
         return this;
     }
@@ -59,7 +72,7 @@ public class LayoutNode : IEnumerable<LayoutNode>
         sb ??= new();
         sb.Append(" ".PadLeft(indent+1, '→'));
         sb.Append($"{GetType().Name}");
-        if (!string.IsNullOrEmpty(Node.Name)) sb.Append($" [{Node.Name}]");
+        if (!string.IsNullOrEmpty(Control.Name)) sb.Append($" [{Control.Name}]");
         if (MeasuredSize is not null) sb.Append($" MeasuredSize{MeasuredSize.Value}");
         if (!Bounds.IsEmpty) sb.Append($" Bounds{Bounds}");
         sb.AppendLine();
@@ -70,17 +83,17 @@ public class LayoutNode : IEnumerable<LayoutNode>
         return sb;
     }
     
-    internal StringBuilder BuildInstructionsString(StringBuilder? sb = null, int indent = 0)
+    internal StringBuilder BuildGuideString(StringBuilder? sb = null, int indent = 0)
     {
         sb ??= new();
         sb.Append(" ".PadLeft(indent+1, '→'));
-        if (!string.IsNullOrEmpty(Node.Name)) sb.Append($"[{Node.Name}] ");
-        if (Instructions is not null)
-            sb.Append($"{Instructions}");
+        if (!string.IsNullOrEmpty(Control.Name)) sb.Append($"[{Control.Name}] ");
+        if (Guide is not null)
+            sb.Append($"{Guide}");
         sb.AppendLine();
 
         foreach (var child in Children)
-            child.BuildInstructionsString(sb, indent + 1);
+            child.BuildGuideString(sb, indent + 1);
         
         return sb;
     }

@@ -6,13 +6,13 @@ using No8.Areaz.Painting;
 
 namespace No8.AreazTests.Models;
 
-public class TestNode : INode
+public class TestControl : IControl
 {
     public string Name { get; set; } = string.Empty;
     //public SizeNumber? SizeRequested { get; set; }
     
-    public TestNode() { }
-    public TestNode(string name) { Name = name; }
+    public TestControl() { }
+    public TestControl(string name) { Name = name; }
 
     public string ToString(StringBuilder? sb = null)
     {
@@ -25,6 +25,11 @@ public class TestNode : INode
 
     private readonly ILayoutManager _layoutManager = CanvasLayout.Default;
     public ILayoutManager? LayoutManager() => _layoutManager;
+    public bool ValidGuide(ILayoutGuide? guide)
+    {
+        return guide is null || 
+               guide.GetType().IsAssignableTo(typeof(CanvasGuide));
+    }
 
     private void PaintBorder(Canvas canvas, Rectangle bounds, LineSet lineSet)
     {

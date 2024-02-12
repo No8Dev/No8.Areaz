@@ -1,31 +1,27 @@
 using System.Drawing;
-using System.Security.Cryptography.X509Certificates;
-using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
-public enum Direction
-{
-    Unknown,
-    Vertical,
-    Horizontal
-}
-
-public class Stack : Node
+public class Stack : Control
 {
     public override ILayoutManager LayoutManager() => StackLayout.Default;
-    
+    public override bool ValidGuide(ILayoutGuide? guide)
+    {
+        return guide is null || 
+               guide.GetType().IsAssignableTo(typeof(StackGuide));
+    }
+
     public Direction StackDirection { get; set; } = Direction.Vertical;
 }
 
 public class StackLayout : ILayoutManager
 {
     public static readonly StackLayout Default = new();
-    private static readonly Instructions DefaultInstructions = new ();
+    private static readonly StackGuide DefaultGuide = new ();
     
     public void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
-        var stack = container.Node as Stack ?? throw new Exception($"Unexpected container {container}");
+        var stack = container.Control as Stack ?? throw new Exception($"Unexpected container {container}");
         if (container.MeasuredSize is null) throw new Exception($"Stack has no measured size {stack}");
 
         // Measure all the fixed size ones first
@@ -36,9 +32,9 @@ public class StackLayout : ILayoutManager
         foreach (var child in children)
         {
             child.FixedSize = false;
-            var childInstructions = child.Instructions as Instructions ?? DefaultInstructions;
-            var sizeRequested = childInstructions.SizeRequested;
-            var childMargin = child.Instructions?.Margin ?? SidesInt.Zero;
+            var childGuide = child.Guide as StackGuide ?? DefaultGuide;
+            var sizeRequested = childGuide.Size;
+            var childMargin = child.Guide?.Margin ?? SidesInt.Zero;
            
             if (sizeRequested is not null)
             {
@@ -59,7 +55,7 @@ public class StackLayout : ILayoutManager
                     
                     var (_, actualHeight, _) = LayoutTree.ResolveDimension(
                         availableSize.Height - childMargin.Top - childMargin.Bottom,
-                        height, 0f, childInstructions.CrossAlign);
+                        height, 0f, childGuide.CrossAlign);
                     
                     remainingSize = remainingSize with { Width = remainingSize.Width - width };
                     child.MeasuredSize = new(width, actualHeight);
@@ -78,7 +74,7 @@ public class StackLayout : ILayoutManager
                     
                     var (_, actualWidth, _) = LayoutTree.ResolveDimension(
                         remainingSize.Width - childMargin.Start - childMargin.End,
-                        width, 0f, childInstructions.CrossAlign);
+                        width, 0f, childGuide.CrossAlign);
                     
                     remainingSize = remainingSize with { Height = remainingSize.Height - height };
                     child.MeasuredSize = new(actualWidth, height);
@@ -94,15 +90,15 @@ public class StackLayout : ILayoutManager
         var xy = XY.Zero;
         foreach (var child in children)
         {
-            var childInstructions = child.Instructions as Instructions ?? DefaultInstructions;
-            var sizeRequested = childInstructions.SizeRequested;
-            var childMargin = child.Instructions?.Margin ?? SidesInt.Zero;
+            var childGuide = child.Guide as StackGuide ?? DefaultGuide;
+            var sizeRequested = childGuide.Size;
+            var childMargin = child.Guide?.Margin ?? SidesInt.Zero;
             
             if (stack.StackDirection == Direction.Horizontal)
             {
                 var (y, _, _) = LayoutTree.ResolveDimension(
                     availableSize.Height - childMargin.Top - childMargin.Bottom,
-                    child.MeasuredSize!.Value.Height, 0f, childInstructions.CrossAlign);
+                    child.MeasuredSize!.Value.Height, 0f, childGuide.CrossAlign);
 
                 if (sizeRequested is not null)
                 {
@@ -113,7 +109,7 @@ public class StackLayout : ILayoutManager
                         remainingSize = remainingSize with { Width = remainingSize.Width - actualWidth - childMargin.Start - childMargin.End };
                         var height = sizeRequested.Value.Height.IsPoints ? sizeRequested.Value.Height.Value : 0f;
                         
-                        var (_, actualHeight, _) = LayoutTree.ResolveDimension(availableSize.Height - childMargin.Top - childMargin.Bottom, height, 0f, childInstructions.CrossAlign);
+                        var (_, actualHeight, _) = LayoutTree.ResolveDimension(availableSize.Height - childMargin.Top - childMargin.Bottom, height, 0f, childGuide.CrossAlign);
 
                         child.MeasuredSize = new SizeF(actualWidth, actualHeight);
                     }
@@ -131,7 +127,7 @@ public class StackLayout : ILayoutManager
             {
                 var (x, _, _) = LayoutTree.ResolveDimension(
                     availableSize.Width - childMargin.Start - childMargin.End, 
-                    child.MeasuredSize!.Value.Width, 0f, childInstructions.CrossAlign);
+                    child.MeasuredSize!.Value.Width, 0f, childGuide.CrossAlign);
 
                 if (sizeRequested is not null)
                 {
@@ -144,7 +140,7 @@ public class StackLayout : ILayoutManager
                         
                         var (_, actualWidth, _) = LayoutTree.ResolveDimension(
                             availableSize.Width - childMargin.Start - childMargin.End, 
-                            width, 0f, childInstructions.CrossAlign);
+                            width, 0f, childGuide.CrossAlign);
 
                         child.MeasuredSize = new SizeF(actualWidth, actualHeight);
                     }
@@ -164,38 +160,41 @@ public class StackLayout : ILayoutManager
     public void MeasureOut(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
     }
+}
 
-    /// <summary>
-    ///     Properties for Child node
-    /// </summary>
-    public class Instructions : ILayoutManager.ILayoutInstructions
+/// <summary>
+///     Properties for Child node
+/// </summary>
+public class StackGuide : ILayoutGuide
+{
+    public StackGuide(
+        Align crossAlign = Align.Stretch,
+        SizeNumber? size = null,
+        SidesInt? margin = null
+    )
     {
-        public Instructions(
-            Align crossAlign = Align.Stretch,
-            SizeNumber? sizeRequested = null,
-            SidesInt? margin = null
-            )
-        {
-            CrossAlign = crossAlign;
-            SizeRequested = sizeRequested;
-            Margin = margin;
-        }
+        CrossAlign = crossAlign;
+        Size = size;
+        Margin = margin;
+    }
 
-        public Align CrossAlign { get; init; }
+    public Align CrossAlign { get; init; }
         
-        public SizeNumber? SizeRequested { get; init; }
+    /// <summary>
+    ///     Requested Size
+    /// </summary>
+    public SizeNumber? Size { get; init; }
         
-        public SidesInt? Margin { get; init; }
+    public SidesInt? Margin { get; init; }
 
-        public override string ToString() => BuildString(new StringBuilder()).ToString();
+    public override string ToString() => BuildString(new StringBuilder()).ToString();
 
-        protected virtual StringBuilder BuildString(StringBuilder? sb = null)
-        {
-            sb ??= new();
-            sb.Append($"{GetType().FullName} Cross:{CrossAlign}");
-            if (SizeRequested is not null) sb.Append($" Size{SizeRequested.Value}");
-            if (Margin is not null) sb.Append($" Margin{Margin}");
-            return sb;
-        }
+    protected virtual StringBuilder BuildString(StringBuilder? sb = null)
+    {
+        sb ??= new();
+        sb.Append($"{GetType().FullName} Cross:{CrossAlign}");
+        if (Size is not null) sb.Append($" Size{Size.Value}");
+        if (Margin is not null) sb.Append($" Margin{Margin}");
+        return sb;
     }
 }

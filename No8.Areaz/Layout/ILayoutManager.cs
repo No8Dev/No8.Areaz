@@ -1,26 +1,23 @@
-using System.Drawing;
+namespace No8.Areaz.Layout;
 
-namespace No8.Areaz.Layout
+public interface ILayoutManager
 {
-    public interface ILayoutManager
-    {
-        /// <summary>
-        ///     Layout instructions for the child node of a container
-        /// </summary>
-        interface ILayoutInstructions
-        {
-            /// <summary>
-            ///     Optional size requested for the node
-            /// </summary>
-            SizeNumber? SizeRequested { get; init; }
+    void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children);
+    void MeasureOut(LayoutNode container, IReadOnlyList<LayoutNode> children);
+}
 
-            /// <summary>
-            ///     Margin around node
-            /// </summary>
-            SidesInt? Margin { get; init; }
-        }
+/// <summary>
+///     Layout guide for the child node of a container
+/// </summary>
+public interface ILayoutGuide
+{
+    /// <summary>
+    ///     Optional size requested for the node
+    /// </summary>
+    SizeNumber? Size { get; init; }
 
-        void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children);
-        void MeasureOut(LayoutNode container, IReadOnlyList<LayoutNode> children);
-    }
+    /// <summary>
+    ///     Margin around node
+    /// </summary>
+    SidesInt? Margin { get; init; }
 }

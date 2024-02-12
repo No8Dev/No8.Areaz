@@ -1,5 +1,3 @@
-using No8.Areaz.Painting;
-
 namespace No8.Areaz.Layout;
 
 /// <summary>

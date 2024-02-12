@@ -3,14 +3,19 @@ using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
-public class CanvasNode : Node
+public class CanvasControl : Control
 {
-    public CanvasNode(string? name = null, SizeNumber? size = null) : base(name, size) 
+    public CanvasControl(string? name = null, SizeNumber? size = null) : base(name, size) 
     { }
 
     public Rune BackgroundRune { get; set; } = Pixel.Block.Solid;
 
     public override ILayoutManager? LayoutManager() => CanvasLayout.Default;
+    public override bool ValidGuide(ILayoutGuide? guide)
+    {
+        return guide is null || 
+               guide.GetType().IsAssignableTo(typeof(CanvasGuide));
+    }
 
     public override void PaintIn(Canvas canvas, Rectangle rect)
     {
@@ -21,11 +26,11 @@ public class CanvasNode : Node
 public class CanvasLayout : ILayoutManager
 {
     public static readonly CanvasLayout Default = new();
-    internal static readonly Instructions DefaultInstructions = new ();
+    internal static readonly CanvasGuide DefaultGuide = new ();
 
     public void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
-        if (container.MeasuredSize is null) throw new Exception($"Canvas has no measured size {container.Node}");        
+        if (container.MeasuredSize is null) throw new Exception($"Canvas has no measured size {container.Control}");        
         
         foreach (var child in children)
             MeasureChild(container, child);
@@ -37,10 +42,10 @@ public class CanvasLayout : ILayoutManager
     
     public void MeasureChild(LayoutNode container, LayoutNode child)
     {
-        var instructions = child.Instructions as Instructions ?? DefaultInstructions;
-        var sizeRequested = instructions.SizeRequested;
+        var guide = child.Guide as CanvasGuide ?? DefaultGuide;
+        var sizeRequested = guide.Size;
         var availableSize = container.MeasuredSize!.Value;
-        var remainingSize = LayoutTree.Reduce(availableSize, instructions.Margin ?? SidesInt.Zero);
+        var remainingSize = LayoutTree.Reduce(availableSize, guide.Margin ?? SidesInt.Zero);
         
         SizeF measured;
         
@@ -55,51 +60,51 @@ public class CanvasLayout : ILayoutManager
         else
             measured = remainingSize;
 
-        var (x, width, _) = LayoutTree.ResolveDimension(remainingSize.Width, measured.Width, instructions.XY.X, instructions.AlignHorz);
-        var (y, height, _) = LayoutTree.ResolveDimension(remainingSize.Height, measured.Height, instructions.XY.Y, instructions.AlignVert);
+        var (x, width, _) = LayoutTree.ResolveDimension(remainingSize.Width, measured.Width, guide.XY.X, guide.AlignHorz);
+        var (y, height, _) = LayoutTree.ResolveDimension(remainingSize.Height, measured.Height, guide.XY.Y, guide.AlignVert);
 
         child.MeasuredSize = new(width, height);
         child.Bounds = new((int)x, (int)y, (int)width, (int)height);
     }
+}
 
-    /// <summary>
-    ///     Instructions for laying out a node inside a Canvas Node
-    /// </summary>
-    public class Instructions : ILayoutManager.ILayoutInstructions
+/// <summary>
+///     Guide for laying out a node inside a Canvas Node
+/// </summary>
+public class CanvasGuide : ILayoutGuide
+{
+    public CanvasGuide(
+        Align alignHorz = Align.Start, 
+        Align alignVert = Align.Start,
+        SizeNumber? size = null,
+        SidesInt? margin = null,
+        XY? xy = null)
     {
-        public Instructions(
-            Align alignHorz = Align.Start, 
-            Align alignVert = Align.Start,
-            SizeNumber? sizeRequested = null,
-            SidesInt? margin = null,
-            XY? xy = null)
-        {
-            AlignHorz = alignHorz;
-            AlignVert = alignVert;
-            SizeRequested = sizeRequested;
-            Margin = margin;
-            XY = xy ?? XY.Zero;
-        }
-        
-        public Align AlignHorz { get; set; }
-        public Align AlignVert { get; set; }
-        
-        // ReSharper disable once InconsistentNaming
-        public XY XY { get; set; }
-
-        public SizeNumber? SizeRequested { get; init; }
-        
-        public SidesInt? Margin { get; init; }
-        public override string ToString() => BuildString(new StringBuilder()).ToString();
-
-        protected virtual StringBuilder BuildString(StringBuilder? sb = null)
-        {
-            sb ??= new();
-            sb.Append($"{GetType().FullName} (↔:{AlignHorz} ↕:{AlignVert}) XY:{XY}");
-            if (SizeRequested is not null) sb.Append($" Size{SizeRequested.Value}");
-            if (Margin is not null) sb.Append($" Margin{Margin}");
-            return sb;
-        }
-
+        AlignHorz = alignHorz;
+        AlignVert = alignVert;
+        Size = size;
+        Margin = margin;
+        XY = xy ?? XY.Zero;
     }
+        
+    public Align AlignHorz { get; set; }
+    public Align AlignVert { get; set; }
+        
+    // ReSharper disable once InconsistentNaming
+    public XY XY { get; set; }
+
+    public SizeNumber? Size { get; init; }
+        
+    public SidesInt? Margin { get; init; }
+    public override string ToString() => BuildString(new StringBuilder()).ToString();
+
+    protected virtual StringBuilder BuildString(StringBuilder? sb = null)
+    {
+        sb ??= new();
+        sb.Append($"{GetType().FullName} (↔:{AlignHorz} ↕:{AlignVert}) XY:{XY}");
+        if (Size is not null) sb.Append($" Size{Size.Value}");
+        if (Margin is not null) sb.Append($" Margin{Margin}");
+        return sb;
+    }
+
 }
