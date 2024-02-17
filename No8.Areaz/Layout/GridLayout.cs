@@ -204,7 +204,7 @@ public class GridLayout : ILayoutManager
             {
                 // Fixed size
                 var value = sizeRequested.Resolve(availableSize.Width);
-                remainingSize.Width -= value;
+                remainingSize.Width -= (int)value;
                 actualCols[i] = (int)value;
             }
         }
@@ -220,7 +220,7 @@ public class GridLayout : ILayoutManager
                 {
                     var actualWidth = variableSize * (sizeRequested.Value / totalColPercentages);
                     actualCols[i] = (int)actualWidth;
-                    remainingSize.Width -= actualWidth;
+                    remainingSize.Width -= (int)actualWidth;
                 }
             }
         }        
@@ -234,7 +234,7 @@ public class GridLayout : ILayoutManager
             {
                 var value = sizeRequested.Resolve(availableSize.Height);
                 actualRows[i] = (int)value;
-                remainingSize.Height -= value;
+                remainingSize.Height -= (int)value;
             }
         }
 
@@ -249,7 +249,7 @@ public class GridLayout : ILayoutManager
                 {
                     var value = variableSize * (sizeRequested.Value / totalRowPercentages);
                     actualRows[i] = (int)value;
-                    remainingSize.Height -= value;
+                    remainingSize.Height -= (int)value;
                 }
             }
         }
@@ -284,7 +284,11 @@ public class GridLayout : ILayoutManager
             var childGuide = child.Guide as GridGuide ?? new GridGuide(child.Name);
             var cellSize = grid.GetCellSize(childGuide);
             child.MeasuredSize = cellSize.Rect.Size;
-            child.Bounds = cellSize.Rect;
+            child.Bounds = new(
+                container.Bounds.X + cellSize.Rect.X,
+                container.Bounds.Y + cellSize.Rect.Y,
+                cellSize.Rect.Width,
+                cellSize.Rect.Height);
         }
     }
 

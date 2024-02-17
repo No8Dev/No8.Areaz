@@ -3,30 +3,39 @@ using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
-public class CanvasControl : Control
+public class Frame : Control
 {
-    public CanvasControl(string? name = null, SizeNumber? size = null) : base(name, size) 
+    public Frame(string? name = null, SizeNumber? size = null) : base(name, size) 
     { }
 
-    public Rune BackgroundRune { get; set; } = Pixel.Block.Solid;
+    public Rune BackgroundRune { get; set; } = Pixel.Block.ShadeLight;
+    public LineSet Border { get; set; } = LineSet.None;
 
-    public override ILayoutManager? LayoutManager() => CanvasLayout.Default;
+    public override ILayoutManager? LayoutManager() => FrameLayout.Default;
     public override bool ValidGuide(ILayoutGuide? guide)
     {
         return guide is null || 
-               guide.GetType().IsAssignableTo(typeof(CanvasGuide));
+               guide.GetType().IsAssignableTo(typeof(FrameGuide));
     }
 
     public override void PaintIn(Canvas canvas, Rectangle rect)
     {
-        canvas.FillRectangle(rect, BackgroundRune);
+        if (Border != LineSet.None)
+        {
+            var fillRect = rect;
+            fillRect.Inflate(-1, -1);
+            canvas.FillRectangle(fillRect, BackgroundRune);
+            canvas.DrawRectangle(rect, Border);
+        }
+        else
+            canvas.FillRectangle(rect, BackgroundRune);
     }
 }
 
-public class CanvasLayout : ILayoutManager
+public class FrameLayout  : ILayoutManager
 {
-    public static readonly CanvasLayout Default = new();
-    internal static readonly CanvasGuide DefaultGuide = new ();
+    public static readonly FrameLayout Default = new();
+    internal static readonly FrameGuide DefaultGuide = new ();
 
     public void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
@@ -43,7 +52,8 @@ public class CanvasLayout : ILayoutManager
     
     public void MeasureChild(LayoutNode container, LayoutNode child)
     {
-        var guide = child.Guide as CanvasGuide ?? DefaultGuide;
+        var guide = child.Guide as FrameGuide ?? DefaultGuide;
+        
         var sizeRequested = guide.Size;
         var availableSize = container.MeasuredSize!.Value;
         
@@ -62,7 +72,7 @@ public class CanvasLayout : ILayoutManager
 
         var (x, width, _) = LayoutTree.ResolveDimension(availableSize.Width, measured.Width, guide.XY.X, guide.AlignHorz);
         var (y, height, _) = LayoutTree.ResolveDimension(availableSize.Height, measured.Height, guide.XY.Y, guide.AlignVert);
-        
+
         if (guide.Margin is not null)
         {
             x += guide.Margin.West;
@@ -78,12 +88,9 @@ public class CanvasLayout : ILayoutManager
     }
 }
 
-/// <summary>
-///     Guide for laying out a node inside a Canvas Node
-/// </summary>
-public class CanvasGuide : ILayoutGuide
+public class FrameGuide : ILayoutGuide
 {
-    public CanvasGuide(
+    public FrameGuide(
         Align alignHorz = Align.Start, 
         Align alignVert = Align.Start,
         SizeNumber? size = null,
@@ -106,6 +113,7 @@ public class CanvasGuide : ILayoutGuide
     public SizeNumber? Size { get; init; }
         
     public SidesInt? Margin { get; init; }
+    
     public override string ToString() => BuildString(new StringBuilder()).ToString();
 
     protected virtual StringBuilder BuildString(StringBuilder? sb = null)
@@ -116,5 +124,4 @@ public class CanvasGuide : ILayoutGuide
         if (Margin is not null) sb.Append($" Margin{Margin}");
         return sb;
     }
-
 }

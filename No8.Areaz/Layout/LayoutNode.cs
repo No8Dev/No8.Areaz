@@ -14,7 +14,7 @@ public class LayoutNode : IEnumerable<LayoutNode>
     /// <summary>
     ///     The size that the node thinks it should be
     /// </summary>
-    public SizeF? MeasuredSize { get; set; }
+    public Size? MeasuredSize { get; set; }
     
     /// <summary>
     ///     The location and size of the node after Measure and Layout

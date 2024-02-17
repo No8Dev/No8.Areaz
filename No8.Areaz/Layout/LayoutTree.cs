@@ -11,13 +11,12 @@ public static class LayoutTree
     {
         var guide = root.Guide ?? DefaultRootLayout;
         var sizeRequested = guide.Size;
-        var remainingSize = LayoutTree.Reduce(availableSize, guide.Margin ?? SidesInt.Zero);
 
         if (sizeRequested?.Width is not null &&
             sizeRequested?.Height is not null)
         {
-            var measuredWidth = sizeRequested.Value.Width.Resolve(remainingSize.Width);
-            var measuredHeight = sizeRequested.Value.Height.Resolve(remainingSize.Height);
+            var measuredWidth = sizeRequested.Value.Width.Resolve(availableSize.Width);
+            var measuredHeight = sizeRequested.Value.Height.Resolve(availableSize.Height);
             var alignHorz = Align.Start;
             var alignVert = Align.Start;
             if (guide is CanvasGuide canvasGuide)
@@ -26,16 +25,36 @@ public static class LayoutTree
                 alignVert = canvasGuide.AlignVert;
             }
 
-            var (x, width, _) = ResolveDimension(remainingSize.Width, measuredWidth, 0, alignHorz);
-            var (y, height, _) = ResolveDimension(remainingSize.Height, measuredHeight, 0, alignVert);
+            var (x, width, _) = ResolveDimension(availableSize.Width, measuredWidth, 0, alignHorz);
+            var (y, height, _) = ResolveDimension(availableSize.Height, measuredHeight, 0, alignVert);
+
+            if (guide.Margin is not null)
+            {
+                x += guide.Margin.West;
+                y += guide.Margin.North;
+                width -= guide.Margin.West + guide.Margin.East;
+                height -= guide.Margin.North + guide.Margin.South;
+            }
             
-            root.MeasuredSize = new (width, height);
+            root.MeasuredSize = new ((int)width, (int)height);
             root.Bounds = new((int)x, (int)y, (int)width, (int)height);
         }
         else
         {
-            root.MeasuredSize = remainingSize;
-            root.Bounds = new(Point.Empty, remainingSize);
+            if (guide.Margin is not null)
+            {
+                root.MeasuredSize = new (
+                    availableSize.Width - guide.Margin.West - guide.Margin.East,
+                    availableSize.Height - guide.Margin.North - guide.Margin.South);
+                root.Bounds = new(
+                    new (guide.Margin.West, guide.Margin.North), 
+                    root.MeasuredSize.Value);
+            }
+            else
+            {
+                root.MeasuredSize = availableSize;
+                root.Bounds = new(Point.Empty, availableSize);
+            }
         }
 
         LayoutInternal(root);
@@ -57,29 +76,14 @@ public static class LayoutTree
             throw new Exception($"node was not measured by container:{layoutNode.Control}");
     }
 
-    public static void Paint(Canvas canvas, LayoutNode container, Rectangle? containerBounds = null)
+    public static void Paint(Canvas canvas, LayoutNode container)
     {
-        var margin = container.Guide?.Margin ?? SidesInt.Zero;
-        containerBounds ??= container.Bounds;
-        if (margin.HasValue)
-            containerBounds = containerBounds.Value with
-            {
-                X = containerBounds.Value.X + margin.West,
-                Y = containerBounds.Value.Y + margin.North
-            };
-            
-        container.Control.PaintIn(canvas, containerBounds.Value);
+        container.Control.PaintIn(canvas, container.Bounds);
 
         foreach (var child in container.Children)
-        {
-            var childBounds = new Rectangle(
-                containerBounds.Value.X + child.Bounds.X,
-                containerBounds.Value.Y + child.Bounds.Y,
-                child.Bounds.Width, child.Bounds.Height);
-            Paint(canvas, child, childBounds);
-        }
+            Paint(canvas, child);
             
-        container.Control.PaintOut(canvas, containerBounds.Value);
+        container.Control.PaintOut(canvas, container.Bounds);
     }
 
     // ReSharper disable once UnusedTupleComponentInReturnValue
