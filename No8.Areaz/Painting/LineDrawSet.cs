@@ -5,31 +5,32 @@ namespace No8.Areaz.Painting;
 internal class LineDrawSet
 {
     //    ^
-    //  <- ->    <Left(8), ^Top(4), >Right(2), vBottom(1)
+    //  <- ->    <West(8), ^North(4), >East(2), vSouth(1)
     //    v
-    // 0 lines
-    public const byte IndexZero = 0b_0000; // 0
-                                           // 1 Line
-    public const byte IndexLeft = 0b_1000; // 8
-    public const byte IndexTop = 0b_0100; // 4
-    public const byte IndexRight = 0b_0010; // 2
-    public const byte IndexBot = 0b_0001; // 1
-                                          // 2 lines - Horz + Vert
-    public const byte IndexLeftRight = 0b_1010; // 10
-    public const byte IndexTopBot = 0b_0101; // 5
-                                             // 2 Lines - Corner
-    public const byte IndexLeftTop = 0b_1100; // 12
-    public const byte IndexTopRight = 0b_0110; // 6
-    public const byte IndexRightBot = 0b_0011; // 3
-    public const byte IndexBotLeft = 0b_1001; // 9
-                                              // 3 Lines - Intersection
-    public const byte IndexLeftTopRight = 0b_1110; // 14
-    public const byte IndexTopRightBot = 0b_0111; // 7
-    public const byte IndexRightBotLeft = 0b_1011; // 11
-    public const byte IndexBotLeftTop = 0b_1101; // 13
-                                                 // 4 Lines - Cross
-    public const byte IndexLeftTopRightBot = 0b_1111; //  15
-
+    // ' '╥'╺'╔'╨'║'╚'╠'╸'╗'═'╦'╝'╣'╩'╬'
+    //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+    //                0 lines
+    public const byte IndexZero = 0b_0000;  // 0
+    //                1 Line
+    public const byte IndexWest = 0b_1000;  // 8
+    public const byte IndexNorth = 0b_0100;   // 4
+    public const byte IndexEast = 0b_0010; // 2
+    public const byte IndexSouth = 0b_0001;   // 1
+    //                2 lines - Horz + Vert
+    public const byte IndexWestEast = 0b_1010; // 10
+    public const byte IndexNorthSouth = 0b_0101; // 5
+    //                2 Lines - Corner
+    public const byte IndexNorthWest = 0b_1100;  // 12
+    public const byte IndexNorthEast = 0b_0110; // 6
+    public const byte IndexSouthEast = 0b_0011; // 3
+    public const byte IndexSouthWest = 0b_1001;  // 9
+    //                3 Lines - Intersection
+    public const byte IndexWestNorthEast = 0b_1110; // 14
+    public const byte IndexNorthEastSouth = 0b_0111;  // 7
+    public const byte IndexWestSouthEast = 0b_1011; // 11
+    public const byte IndexSouthWestNorth = 0b_1101;   // 13
+    //                4 Lines - Cross
+    public const byte IndexWestNorthEastSouth = 0b_1111; //  15
 
     /*
      Only need to combine lines when new top line is horz or vert.
@@ -56,26 +57,26 @@ internal class LineDrawSet
         _chars = chars.ToRuneList();
     }
 
-    public Rune Horz      => _chars[IndexLeftRight];
-    public Rune HorzStart => _chars[IndexRight];
-    public Rune HorzEnd   => _chars[IndexLeft];
-    public Rune Vert      => _chars[IndexTopBot];
-    public Rune VertStart => _chars[IndexBot];
-    public Rune VertEnd   => _chars[IndexTop];
-    public Rune TopLeft   => _chars[IndexRightBot];
-    public Rune TopRight  => _chars[IndexBotLeft];
-    public Rune BotLeft   => _chars[IndexTopRight];
-    public Rune BotRight  => _chars[IndexLeftTop];
-    public Rune LeftSide  => _chars[IndexTopRightBot];
-    public Rune Top       => _chars[IndexRightBotLeft];
-    public Rune RightSide => _chars[IndexBotLeftTop];
-    public Rune Bottom    => _chars[IndexLeftTopRight];
-    public Rune Cross     => _chars[IndexLeftTopRightBot];
+    public Rune Horz => _chars[IndexWestEast];
+    public Rune HorzStart => _chars[IndexEast];
+    public Rune HorzEnd => _chars[IndexWest];
+    public Rune Vert => _chars[IndexNorthSouth];
+    public Rune VertStart => _chars[IndexSouth];
+    public Rune VertEnd => _chars[IndexNorth];
+    public Rune TopLeft => _chars[IndexSouthEast];
+    public Rune TopRight => _chars[IndexSouthWest];
+    public Rune BotLeft => _chars[IndexNorthEast];
+    public Rune BotRight => _chars[IndexNorthWest];
+    public Rune LeftSide => _chars[IndexNorthEastSouth];
+    public Rune Top => _chars[IndexWestSouthEast];
+    public Rune RightSide => _chars[IndexSouthWestNorth];
+    public Rune Bottom => _chars[IndexWestNorthEast];
+    public Rune Cross => _chars[IndexWestNorthEastSouth];
 
 
-    public bool Contains(Rune       rune) => rune.IsValid() && _chars.Contains(rune);
-    public bool IsStraightLine(Rune rune) => rune == _chars[IndexLeftRight] || rune == _chars[IndexTopBot];
-    public int  IndexOf(Rune        rune) => _chars.IndexOf(rune);
+    public bool Contains(Rune rune) => rune.IsValid() && _chars.Contains(rune);
+    public bool IsStraightLine(Rune rune) => rune == _chars[IndexWestEast] || rune == _chars[IndexNorthSouth];
+    public int IndexOf(Rune rune) => _chars.IndexOf(rune);
 
     public Rune Combine(Rune underChar, Rune overChar, bool isStart = false, bool isEnd = false)
     {
@@ -84,14 +85,14 @@ internal class LineDrawSet
 
         if (isStart || isEnd)
         {
-            if (isStart && overIndex == IndexLeftRight)
-                overIndex = IndexRight;
-            else if (isEnd && overIndex == IndexLeftRight)
-                overIndex = IndexLeft;
-            if (isStart && overIndex == IndexTopBot)
-                overIndex = IndexBot;
-            else if (isEnd && overIndex == IndexTopBot)
-                overIndex = IndexTop;
+            if (isStart && overIndex == IndexWestEast)
+                overIndex = IndexEast;
+            else if (isEnd && overIndex == IndexWestEast)
+                overIndex = IndexWest;
+            if (isStart && overIndex == IndexNorthSouth)
+                overIndex = IndexSouth;
+            else if (isEnd && overIndex == IndexNorthSouth)
+                overIndex = IndexNorth;
         }
 
         return _chars[(underIndex | overIndex) & 0b_1111];

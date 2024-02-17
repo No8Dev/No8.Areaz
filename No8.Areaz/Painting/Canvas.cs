@@ -250,7 +250,7 @@ public class Canvas
 
             stepCount = width + 1;
         }
-        else
+        else // vertical
         {
             stepX = width == 0 ? 0 : (width + 0.9f) / height;
             stepY = goingUp ? -1f : 1f;
@@ -291,7 +291,7 @@ public class Canvas
                 else
                     chr = lineDraw.Horz;
             }
-            else
+            else // vertical
             {
                 if (step == 0)
                     chr = goingUp ? lineDraw.VertEnd : lineDraw.VertStart;

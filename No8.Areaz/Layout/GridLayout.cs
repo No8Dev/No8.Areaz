@@ -4,10 +4,13 @@ using No8.Areaz.Painting;
 
 namespace No8.Areaz.Layout;
 
-public class Grid : Control, IEnumerable
+public class Grid : Control
 {
     public override ILayoutManager? LayoutManager() => GridLayout.Default;
-    public Rune BackgroundRune { get; set; } = Pixel.Block.Solid;
+    public Rune Background { get; set; } = (Rune)' ';
+    public LineSet InnerLines { get; set; } = LineSet.Single;
+    public LineSet OuterLines { get; set; } = LineSet.Double;
+    public LineSet AreaLines { get; set; } = LineSet.None;
 
     private readonly List<GridColTemplate> _colTemplates = new();
     private readonly List<GridRowTemplate> _rowTemplates = new();
@@ -28,29 +31,48 @@ public class Grid : Control, IEnumerable
     
     public override void PaintIn(Canvas canvas, Rectangle rect)
     {
-        canvas.FillRectangle(rect, BackgroundRune);
-        if (_cellColGap > 0)
+        canvas.FillRectangle(rect, Background);
+
+        if (_cellColGap > 0 && InnerLines != LineSet.None)
         {
             var x = rect.X;
-            var y = rect.Y;
             foreach (var pair in _colWidths)
             {
-                canvas.DrawLine(x, y, x, y + rect.Height, LineSet.Rounded);
+                canvas.DrawLine(x, rect.Y, x, rect.Bottom - 1, InnerLines);
                 x += (int)pair.Value + _cellColGap;
             }
-            canvas.DrawLine(x, y, rect.Width, x, LineSet.Rounded);
+
+            canvas.DrawLine(x, rect.Y, x, rect.Bottom - 1, InnerLines);
         }
-        if (_cellRowGap > 0)
+
+        if (_cellRowGap > 0 && InnerLines != LineSet.None)
         {
-            var x = rect.X;
             var y = rect.Y;
             foreach (var pair in _rowHeights)
             {
-                canvas.DrawLine(x, y, rect.Width, y, LineSet.Rounded);
+                canvas.DrawLine(rect.X, y, rect.Right - 1, y, InnerLines);
                 y += (int)pair.Value + _cellRowGap;
             }
-            canvas.DrawLine(x, y, rect.Width, y, LineSet.Rounded);
+
+            canvas.DrawLine(rect.X, y, rect.Right - 1, y, InnerLines);
         }
+
+        if (AreaLines != LineSet.None)
+        {
+            foreach (var area in Areas)
+            {
+                var areaRect = _areaSizes[area.Name].Rect;
+                areaRect = new (
+                    rect.X + areaRect.X - 1, 
+                    rect.Y + areaRect.Y - 1, 
+                    areaRect.Width + 2, 
+                    areaRect.Height + 2);
+                canvas.DrawRectangle(areaRect, AreaLines);
+            }
+        }
+        
+        if (_cellRowGap > 0 && _cellRowGap > 0)
+            canvas.DrawRectangle(rect, OuterLines);
     }
 
     private void Clear()
@@ -78,9 +100,21 @@ public class Grid : Control, IEnumerable
         Clear();
     }
 
-    public Grid Add(IEnumerable<GridRowTemplate> rows) { _rowTemplates.AddRange(rows); Clear(); return this; }
-    public Grid Add(IEnumerable<GridColTemplate> cols) { _colTemplates.AddRange(cols); Clear(); return this; }
-    public Grid Add(IEnumerable<GridArea> areas) { _areas.AddRange(areas); Clear(); return this; }
+    public Grid AddRows(IEnumerable<GridRowTemplate> rows) { _rowTemplates.AddRange(rows); Clear(); return this; }
+    public Grid AddRows(IEnumerable<Number> heights)
+    {
+        foreach (var height in heights)
+            _rowTemplates.Add(new (height));
+        return this;
+    }
+    public Grid AddCols(IEnumerable<GridColTemplate> cols) { _colTemplates.AddRange(cols); Clear(); return this; }
+    public Grid AddCols(IEnumerable<Number> widths)
+    {
+        foreach (var width in widths)
+            _colTemplates.Add(new(width));
+        return this;
+    }
+    public Grid AddAreas(IEnumerable<GridArea> areas) { _areas.AddRange(areas); Clear(); return this; }
 
     public IEnumerator GetEnumerator() => _areas.GetEnumerator();
 
@@ -227,27 +261,27 @@ public class GridLayout : ILayoutManager
 
         foreach (var area in grid.Areas)
         {
-            var x = 0;
-            var y = 0;
+            var x = grid.CellColGap * (area.Col + 1);
+            var y = grid.CellRowGap * (area.Row + 1);
             for (int i = 0; i < area.Col; i++)
                 x += actualCols[i];
             for (int j = 0; j < area.Row; j++)
                 y += actualRows[j];
-            var width = 0;
-            var height = 0;
+            var width = grid.CellColGap * (area.ColSpan - 1);
+            var height = grid.CellRowGap * (area.RowSpan - 1);
             for (int i = area.Col; i < area.Col + area.ColSpan; i++)
                 width += actualCols[i];
             for (int i = area.Row; i < area.Row + area.RowSpan; i++)
                 height += actualRows[i];
 
-            var areaSize = new GridCellSize(area.Name, new Rectangle(x, y, width, height));
+            var areaSize = new GridCellSize(area.Name, new (x, y, width, height));
             grid.SetAreaSize(area.Name, areaSize);
         }
         
         // Now that the Grid rows and cols have been measured, lets set all the children bounds
         foreach (var child in children)
         {
-            var childGuide = child.Guide as GridGuide ?? throw new Exception($"Grid child does not have a GridGuide: {child.Name}");
+            var childGuide = child.Guide as GridGuide ?? new GridGuide(child.Name);
             var cellSize = grid.GetCellSize(childGuide);
             child.MeasuredSize = cellSize.Rect.Size;
             child.Bounds = cellSize.Rect;
@@ -265,13 +299,17 @@ public class GridLayout : ILayoutManager
 /// </summary>
 public class GridGuide : ILayoutGuide
 {
-    public GridGuide(int? col = null, int? row = null, string? areaName = null)
+    public GridGuide(int? col = null, int? row = null)
     {
         Size = null;
         Margin = null;
-        AreaName = areaName;
         Col = col;
         Row = row;
+    }
+
+    public GridGuide(string areaName)
+    {
+        AreaName = areaName;
     }
     
     public int? Col { get; set; }

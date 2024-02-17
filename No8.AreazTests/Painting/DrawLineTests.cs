@@ -127,6 +127,28 @@ public class DrawLineTests
     }
 
     [Test]
+    public void DrawLinesRounded()
+    {
+        _canvas.DrawLine( 0, 0, 0, 4, LineSet.Rounded );
+        _canvas.DrawLine( 6, 0, 6, 4, LineSet.Rounded );
+        _canvas.DrawLine( 9, 0, 9, 4, LineSet.Rounded );
+
+        _canvas.DrawLine( 0, 0, 9, 0, LineSet.Rounded );
+        _canvas.DrawLine( 0, 2, 9, 2, LineSet.Rounded );
+        _canvas.DrawLine( 0, 4, 9, 4, LineSet.Rounded );
+
+        var str = _canvas.ToString();
+        var box = """
+                ╭─────┬──╮
+                │     │  │
+                ├─────┼──┤
+                │     │  │
+                ╰─────┴──╯
+                """;
+        Assert.AreEqual( box, str );
+    }
+
+    [Test]
     public void DrawLinesDouble()
     {
         _canvas.DrawLine( 0, 1, 0, 4, LineSet.Double );
