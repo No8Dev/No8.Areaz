@@ -1,9 +1,9 @@
 namespace No8.Areaz.Layout;
 
 /// <summary>
-///     Values for Start, Top, End, Bottom edges
+///     Values for West, North, East, South edges
 /// </summary>
-public record SidesInt(int Start, int Top, int End, int Bottom)
+public record SidesInt(int West, int North, int East, int South)
 {
     public static readonly SidesInt Zero = new(0);
     public static readonly SidesInt One = new(1);
@@ -26,34 +26,34 @@ public record SidesInt(int Start, int Top, int End, int Bottom)
         get =>
             side switch
             {
-                Side.Start => Start,
-                Side.Top => Top,
-                Side.End => End,
-                Side.Bottom => Bottom,
+                Side.West => West,
+                Side.North => North,
+                Side.East => East,
+                Side.South => South,
                 _ => throw new ArgumentException("Unsupported side", nameof(side))
             };
     }
 
-    public bool IsZero => Start == 0 &&
-                           Top == 0 &&
-                           End == 0 &&
-                           Bottom == 0;
+    public bool IsZero => West == 0 &&
+                           North == 0 &&
+                           East == 0 &&
+                           South == 0;
 
     public bool HasValue => !IsZero;
 
-    public void Deconstruct(out int start, out int top, out int end, out int bottom)
+    public void Deconstruct(out int west, out int north, out int east, out int south)
     {
-        start = Start;
-        top = Top;
-        end = End;
-        bottom = Bottom;
+        west = West;
+        north = North;
+        east = East;
+        south = South;
     }
 
     public override string ToString()
     {
-        if (Start == End  && Top == Bottom && Start == Top)
-            return $"(:{Start})";
-        return $"(←:{Start} ↑:{Top} →:{End} ↓:{Bottom})";
+        if (West == East  && North == South && West == North)
+            return $"(:{West})";
+        return $"(←:{West} ↑:{North} →:{East} ↓:{South})";
     }
 
 }

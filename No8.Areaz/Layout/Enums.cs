@@ -2,10 +2,10 @@ namespace No8.Areaz.Layout;
 
 public enum Side
 {
-    Top,
-    Bottom,
-    Start,
-    End,
+    West,
+    North,
+    East,
+    South,
     Horizontal,
     Vertical,
     All

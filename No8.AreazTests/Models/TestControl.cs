@@ -9,6 +9,10 @@ namespace No8.AreazTests.Models;
 public class TestControl : IControl
 {
     public string Name { get; set; } = string.Empty;
+
+    public Rune Background { get; set; } = Pixel.Block.ShadeLight;
+
+    public LineSet LineSet { get; set; } = LineSet.Single;
     //public SizeNumber? SizeRequested { get; set; }
     
     public TestControl() { }
@@ -31,12 +35,12 @@ public class TestControl : IControl
                guide.GetType().IsAssignableTo(typeof(CanvasGuide));
     }
 
-    private void PaintBorder(Canvas canvas, Rectangle bounds, LineSet lineSet)
+    private void PaintBorder(Canvas canvas, Rectangle bounds)
     {
         if (bounds.Size.IsEmpty) return;
         if (bounds.Height <= 1 || bounds.Width <= 1)
         {
-            canvas.DrawLine(bounds, lineSet);
+            canvas.DrawLine(bounds, LineSet);
             if (bounds.Height <= 1)
             {
                 canvas[bounds.Y, bounds.X] = '├';
@@ -49,14 +53,14 @@ public class TestControl : IControl
             }
         }
         else 
-            canvas.DrawRectangle(bounds, lineSet);
+            canvas.DrawRectangle(bounds, LineSet);
     }
 
     public void PaintIn(Canvas canvas, Rectangle rect)
     {
-        canvas.FillRectangle(rect, Pixel.Block.ShadeLight);
+        canvas.FillRectangle(rect, Background);
         
-        PaintBorder(canvas, rect, LineSet.Single);
+        PaintBorder(canvas, rect);
         
         if (Name.Length > 0)
             canvas.DrawString(rect.X + 1, rect.Y, $"[{Name}]");

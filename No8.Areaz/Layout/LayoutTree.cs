@@ -5,11 +5,6 @@ namespace No8.Areaz.Layout;
 
 public static class LayoutTree
 {
-    public static LayoutNode Create(IControl control, ILayoutGuide? guide = null)
-    {
-        return new (control, guide);
-    }
-
     private static readonly CanvasGuide DefaultRootLayout = CanvasLayout.DefaultGuide;
     
     public static void Layout(LayoutNode root, Size availableSize)
@@ -69,8 +64,8 @@ public static class LayoutTree
         if (margin.HasValue)
             containerBounds = containerBounds.Value with
             {
-                X = containerBounds.Value.X + margin.Start,
-                Y = containerBounds.Value.Y + margin.Top
+                X = containerBounds.Value.X + margin.West,
+                Y = containerBounds.Value.Y + margin.North
             };
             
         container.Control.PaintIn(canvas, containerBounds.Value);
@@ -124,18 +119,18 @@ public static class LayoutTree
     public static Size Reduce(SizeF availableSize, SidesInt sides)
     {
         return new (
-            (int)availableSize.Width - sides.Start - sides.End,
-            (int)availableSize.Height - sides.Top - sides.Bottom
+            (int)availableSize.Width - sides.West - sides.East,
+            (int)availableSize.Height - sides.North - sides.South
         );
     }
         
     public static Rectangle Reduce(Rectangle rect, SidesInt sides)
     {
         return new Rectangle(
-            rect.X + sides.Start,
-            rect.Y + sides.Top,
-            rect.Width - sides.Start - sides.End,
-            rect.Height - sides.Top - sides.Bottom
+            rect.X + sides.West,
+            rect.Y + sides.North,
+            rect.Width - sides.West - sides.East,
+            rect.Height - sides.North - sides.South
         );
     }
 }

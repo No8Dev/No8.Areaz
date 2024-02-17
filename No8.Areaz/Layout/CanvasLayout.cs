@@ -30,7 +30,8 @@ public class CanvasLayout : ILayoutManager
 
     public void MeasureIn(LayoutNode container, IReadOnlyList<LayoutNode> children)
     {
-        if (container.MeasuredSize is null) throw new Exception($"Canvas has no measured size {container.Control}");        
+        if (container.MeasuredSize is null) 
+            throw new Exception($"Canvas has no measured size {container.Control}");        
         
         foreach (var child in children)
             MeasureChild(container, child);

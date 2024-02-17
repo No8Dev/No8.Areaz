@@ -25,11 +25,9 @@ public class LayoutNode : IEnumerable<LayoutNode>
     
     public bool IsLeaf() => _children.IsEmpty();
 
-    public LayoutNode(IControl control, ILayoutGuide? guide = null)
-    {
-        Control = control;
-        Guide = guide;
-    }
+    public LayoutNode(IControl control, ILayoutGuide? guide = null) 
+        : this(string.Empty, control, guide)
+    { }
 
     public LayoutNode(string name, IControl control, ILayoutGuide? guide = null)
     {

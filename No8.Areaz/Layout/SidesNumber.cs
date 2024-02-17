@@ -1,10 +1,6 @@
 namespace No8.Areaz.Layout;
 
-public record SidesNumber(
-    Number Start, 
-    Number Top, 
-    Number End, 
-    Number Bottom)
+public record SidesNumber()
 {
     public static SidesNumber Zero => new(0 );
     public static SidesNumber One => new(1 );
@@ -21,18 +17,26 @@ public record SidesNumber(
         : this (horizontal, vertical, horizontal, vertical)
     { }
 
-    public SidesNumber(SidesNumber other)
+    public SidesNumber(Number west, Number north, Number east, Number south) : this()
     {
-        Start = other.Start;
-        Top = other.Top;
-        End = other.End;
-        Bottom = other.Bottom;
+        West = west;
+        North = north;
+        East = east;
+        South = south;
     }
 
-    public Number Bottom { get; } = Number.Undefined;
-    public Number End { get; } = Number.Undefined;
-    public Number Start { get; } = Number.Undefined;
-    public Number Top { get; } = Number.Undefined;
+    public SidesNumber(SidesNumber other)
+    {
+        West = other.West;
+        North = other.North;
+        East = other.East;
+        South = other.South;
+    }
+
+    public Number South { get; } = Number.Undefined;
+    public Number East { get; } = Number.Undefined;
+    public Number West { get; } = Number.Undefined;
+    public Number North { get; } = Number.Undefined;
 
     /// <summary>
     ///     Return the Side value
@@ -43,10 +47,10 @@ public record SidesNumber(
         {
             switch (side)
             {
-                case Side.Start: return Start;
-                case Side.Top: return Top;
-                case Side.End: return End;
-                case Side.Bottom: return Bottom;
+                case Side.West: return West;
+                case Side.North: return North;
+                case Side.East: return East;
+                case Side.South: return South;
                 default:
                     throw new ArgumentException("Unsupported side", nameof(side));
             }
@@ -62,27 +66,27 @@ public record SidesNumber(
         return defaultValue ?? Number.Undefined;
     }
 
-    public (float start, float top, float end, float bottom)
+    public (float west, float north, float east, float south)
         Resolve(float containerWidth, float containerHeight)
     {
         return (
-            Start.Resolve(containerWidth),
-            Top.Resolve(containerHeight),
-            End.Resolve(containerWidth),
-            Bottom.Resolve(containerHeight));
+            West.Resolve(containerWidth),
+            North.Resolve(containerHeight),
+            East.Resolve(containerWidth),
+            South.Resolve(containerHeight));
     }
     
     public bool IsZero =>
-        Start.IsZeroPoints() &&
-        Top.IsZeroPoints() &&
-        End.IsZeroPoints() &&
-        Bottom.IsZeroPoints();
+        West.IsZeroPoints() &&
+        North.IsZeroPoints() &&
+        East.IsZeroPoints() &&
+        South.IsZeroPoints();
 
     public override string ToString()
     {
-        if (Start == End  && Top == Bottom && Start == Top)
-            return $"(all:{Start})";
-        return $"(←:{Start} ↑:{Top} →:{End} ↓:{Bottom})";
+        if (West == East  && North == South && West == North)
+            return $"(all:{West})";
+        return $"(←:{West} ↑:{North} →:{East} ↓:{South})";
     }
     
     public static implicit operator SidesNumber(int value) => Create(value);
