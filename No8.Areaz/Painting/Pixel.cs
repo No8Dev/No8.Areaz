@@ -378,8 +378,8 @@ public static class Pixel
     internal static readonly LineDrawSet DoubleLine = new(" ╥╺╔╨║╚╠╸╗═╦╝╣╩╬");
     internal static readonly LineDrawSet SingleLine = new(" ╷╶┌╵│└├╴┐─┬┘┤┴┼");
     internal static readonly LineDrawSet RoundLine  = new(" ╷╶╭╵│╰├╴╮─┬╯┤┴┼");
-    internal static readonly LineDrawSet DoubleHorz = new(" ╻╺╒╵│╘╞╸╕═╤╛╡╧╪");
-    internal static readonly LineDrawSet SingleHorz = new(" ╷╶╓╹║╙╟╴╖─╥╜╢╨╫");
+    internal static readonly LineDrawSet DoubleHorz = new(" ╷╺╒╵│╘╞╸╕═╤╛╡╧╪");
+    internal static readonly LineDrawSet SingleHorz = new(" ╻╶╓╹║╙╟╴╖─╥╜╢╨╫");
     internal static readonly LineDrawSet NoLine     = new("                ");
 
     //**************************************************

@@ -160,6 +160,12 @@ public static class TextHelpers
         return result;
     }
     
+    /// <summary>
+    ///     Splits a string into multiple lines
+    ///     Each output line is restricted by length
+    ///     Wraps on a word boundary if possible
+    ///     Supports CR LF correctly 
+    /// </summary>
     public static List<string> WrapText(this string text, int maxLineLength)
     {
         List<string> result = new();

@@ -96,4 +96,19 @@ public class LayoutNode : IEnumerable<LayoutNode>
         return sb;
     }
 
+    public LayoutNode? Find(string name) => Find(name, _children);
+
+    private static LayoutNode? Find(string name, IEnumerable<LayoutNode> children)
+    {
+        foreach (var child in children)
+        {
+            if (child.Name == name)
+                return child;
+            var node = Find(name, child._children);
+            if (node != null)
+                return node;
+        }
+
+        return null;
+    }
 }

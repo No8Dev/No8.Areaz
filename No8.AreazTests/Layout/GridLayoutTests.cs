@@ -54,7 +54,7 @@ public class GridLayoutTests : BaseLayoutTests
         {
             new("Header", new TestControl { LineSet = LineSet.Rounded }),
             new("Nav", new TestControl { LineSet = LineSet.Rounded }),
-            new("Content", new TestControl { Background = Pixel.Shapes.CircleBorder }),
+            new("Content", new TestControl { BackgroundRune = Pixel.Shapes.CircleBorder }),
             new("Footer", new TestControl())
         };
         
@@ -96,7 +96,7 @@ public class GridLayoutTests : BaseLayoutTests
         {
             new("Header", new TestControl { LineSet = LineSet.Rounded }),
             new("Nav", new TestControl { LineSet = LineSet.Rounded }),
-            new("Content", new TestControl { Background = Pixel.Shapes.CircleBorder }),
+            new("Content", new TestControl { BackgroundRune = Pixel.Shapes.CircleBorder }),
             new("Footer", new TestControl())
         };
         
@@ -174,7 +174,7 @@ public class GridLayoutTests : BaseLayoutTests
         {
             new("Header", new TestControl { LineSet = LineSet.Rounded }),
             new("Nav", new TestControl { LineSet = LineSet.Rounded }),
-            new("Content", new TestControl { Background = Pixel.Shapes.CircleBorder }),
+            new("Content", new TestControl { BackgroundRune = Pixel.Shapes.CircleBorder }),
             new("Footer", new TestControl())
         };
         
@@ -216,7 +216,7 @@ public class GridLayoutTests : BaseLayoutTests
         {
             new("Header", new TestControl { LineSet = LineSet.Rounded }),
             new("Nav", new TestControl { LineSet = LineSet.Rounded }),
-            new("Content", new TestControl { Background = Pixel.Shapes.CircleBorder }),
+            new("Content", new TestControl { BackgroundRune = Pixel.Shapes.CircleBorder }),
             new("Footer", new TestControl())
         };
         

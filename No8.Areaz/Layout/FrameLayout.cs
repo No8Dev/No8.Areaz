@@ -22,10 +22,17 @@ public class Frame : Control
     {
         if (Border != LineSet.None)
         {
-            var fillRect = rect;
-            fillRect.Inflate(-1, -1);
-            canvas.FillRectangle(fillRect, BackgroundRune);
-            canvas.DrawRectangle(rect, Border);
+            if (rect.Height <= 1 || rect.Width <= 1)
+            {
+                canvas.DrawLine(rect, Border);
+            }
+            else
+            {
+                var fillRect = rect;
+                fillRect.Inflate(-1, -1);
+                canvas.FillRectangle(fillRect, BackgroundRune);
+                canvas.DrawRectangle(rect, Border);
+            }
         }
         else
             canvas.FillRectangle(rect, BackgroundRune);

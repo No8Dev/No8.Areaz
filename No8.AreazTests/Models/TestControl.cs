@@ -10,7 +10,7 @@ public class TestControl : IControl
 {
     public string Name { get; set; } = string.Empty;
 
-    public Rune Background { get; set; } = Pixel.Block.ShadeLight;
+    public Rune BackgroundRune { get; set; } = Pixel.Block.ShadeLight;
 
     public LineSet LineSet { get; set; } = LineSet.Single;
     //public SizeNumber? SizeRequested { get; set; }
@@ -58,7 +58,7 @@ public class TestControl : IControl
 
     public void PaintIn(Canvas canvas, Rectangle rect)
     {
-        canvas.FillRectangle(rect, Background);
+        canvas.FillRectangle(rect, BackgroundRune);
         
         PaintBorder(canvas, rect);
         
